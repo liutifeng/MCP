@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>面向 AI 应用集成的 MCP 与网关</title>
+  <style>
+    :root {
+      --canvas: #071113;
+      --paper: #f7fbfb;
+      --ink: #102025;
+      --muted: #607176;
+      --quiet: #8ba0a4;
+      --line: rgba(23, 52, 57, 0.12);
+      --line-strong: rgba(23, 52, 57, 0.22);
+      --mint: #d9f4ea;
+      --mint-strong: #58d1b5;
+      --teal: #0f8f83;
+      --cyan: #46b9e8;
+      --blue: #366ca1;
+      --blue-soft: #dceefa;
+      --amber: #f0a94b;
+      --amber-soft: #fff0cf;
+      --coral: #ee725f;
+      --coral-soft: #ffe4de;
+      --shadow: 0 34px 90px rgba(0, 19, 23, 0.34);
+      --radius: 18px;
+      --mono: "SFMono-Regular", "Cascadia Mono", "Consolas", monospace;
+      --sans: "Aptos", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(70, 185, 232, .22), transparent 36%),
+        linear-gradient(315deg, rgba(88, 209, 181, .24), transparent 34%),
+        #071113;
+      color: var(--ink);
+      font-family: var(--sans);
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .deck-shell {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .stage {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      transform-origin: center center;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border-radius: 22px;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: 72px 86px;
+      background:
+        linear-gradient(115deg, rgba(255, 255, 255, 0.92), rgba(244, 252, 249, 0.96) 54%, rgba(225, 241, 249, 0.92)),
+        repeating-linear-gradient(90deg, rgba(16, 32, 37, 0.045) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(16, 32, 37, 0.035) 0 1px, transparent 1px 72px);
+    }
+
+    .slide:nth-child(4n + 1) {
+      background:
+        linear-gradient(115deg, #fbfffe, #effbf7 52%, #e9f4ff),
+        repeating-linear-gradient(90deg, rgba(16, 32, 37, 0.045) 0 1px, transparent 1px 72px);
+    }
+
+    .slide:nth-child(4n + 2) {
+      background:
+        linear-gradient(118deg, #fffdf8, #f5fbff 58%, #e8f8f3),
+        repeating-linear-gradient(90deg, rgba(16, 32, 37, 0.04) 0 1px, transparent 1px 72px);
+    }
+
+    .slide:nth-child(4n + 3) {
+      background:
+        linear-gradient(120deg, #f7fbff, #ffffff 54%, #f7f3ff),
+        repeating-linear-gradient(90deg, rgba(16, 32, 37, 0.04) 0 1px, transparent 1px 72px);
+    }
+
+    .slide:nth-child(4n) {
+      background:
+        linear-gradient(120deg, #101f25, #12363a 50%, #102a3b);
+      color: #f6fffb;
+    }
+
+    .slide:nth-child(4n) .lead,
+    .slide:nth-child(4n) .muted,
+    .slide:nth-child(4n) .topline p,
+    .slide:nth-child(4n) .tiny {
+      color: rgba(246, 255, 251, 0.72);
+    }
+
+    .slide:nth-child(4n) h1,
+    .slide:nth-child(4n) h2,
+    .slide:nth-child(4n) h3 {
+      color: #f7fffc;
+    }
+
+    .slide:nth-child(4n) .card,
+    .slide:nth-child(4n) .panel,
+    .slide:nth-child(4n) .side {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.16);
+      color: #f6fffb;
+      box-shadow: none;
+    }
+
+    .slide:nth-child(4n) .card span,
+    .slide:nth-child(4n) .list li,
+    .slide:nth-child(4n) .table-row > div {
+      color: rgba(246, 255, 251, 0.76);
+    }
+
+    .slide:nth-child(4n) .chip {
+      background: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.16);
+      color: #f6fffb;
+    }
+
+    .slide:nth-child(4n) .node:not(.dark) {
+      color: #102025;
+    }
+
+    .slide:nth-child(4n) .table {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .slide:nth-child(4n) .table-head {
+      background: rgba(88, 209, 181, 0.18);
+    }
+
+    .slide:nth-child(4n) .table-row {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .slide:nth-child(4n) .table-row > div {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, transparent 0 62%, rgba(88, 209, 181, 0.16) 62% 72%, transparent 72%),
+        linear-gradient(138deg, transparent 0 68%, rgba(70, 185, 232, 0.14) 68% 79%, transparent 79%);
+      pointer-events: none;
+    }
+
+    .slide::after {
+      content: attr(data-screen-label);
+      position: absolute;
+      right: 88px;
+      top: 54px;
+      color: rgba(16, 32, 37, 0.62);
+      font: 700 18px var(--mono);
+      letter-spacing: 0;
+      padding: 10px 15px;
+      border-radius: 999px;
+      border: 1px solid rgba(16, 32, 37, 0.12);
+      background: rgba(255, 255, 255, 0.58);
+      backdrop-filter: blur(16px);
+    }
+
+    .slide:nth-child(4n)::after {
+      color: rgba(246, 255, 251, 0.72);
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .slide-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      gap: 36px;
+    }
+
+    .layout-title {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      align-items: stretch;
+      gap: 26px;
+    }
+
+    .layout-two {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      align-items: stretch;
+      gap: 30px;
+    }
+
+    .layout-center {
+      place-items: center;
+      text-align: center;
+      padding: 42px 110px;
+    }
+
+    .layout-stack {
+      grid-template-rows: auto 1fr;
+    }
+
+    .eyebrow {
+      color: var(--teal);
+      font: 700 26px var(--mono);
+      margin-bottom: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      border-radius: 999px;
+      background: rgba(217, 244, 234, 0.72);
+      border: 1px solid rgba(88, 209, 181, 0.35);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--mint-strong), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(88, 209, 181, 0.16);
+    }
+
+    .slide:nth-child(4n) .eyebrow {
+      color: #c7fff0;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      text-wrap: pretty;
+    }
+
+    h1 {
+      font-size: 88px;
+      line-height: .98;
+      font-weight: 820;
+      max-width: 1240px;
+      letter-spacing: -1px;
+    }
+
+    h2 {
+      font-size: 72px;
+      line-height: 1.02;
+      font-weight: 820;
+      max-width: 1420px;
+      letter-spacing: -0.5px;
+    }
+
+    h3 {
+      font-size: 34px;
+      line-height: 1.18;
+      font-weight: 720;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 31px;
+      line-height: 1.46;
+      max-width: 1280px;
+    }
+
+    .large-quote {
+      font-size: 48px;
+      line-height: 1.32;
+      font-weight: 680;
+      max-width: 1240px;
+    }
+
+    .title-meta {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 26px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--mint-strong);
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.64);
+      border-radius: var(--radius);
+      padding: 34px;
+      box-shadow: 0 18px 44px rgba(25, 70, 74, 0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .soft-panel {
+      background: rgba(219, 238, 231, 0.56);
+      border: 1px solid rgba(139, 199, 180, 0.46);
+      border-radius: var(--radius);
+      padding: 34px;
+      box-shadow: 0 18px 44px rgba(25, 70, 74, 0.08);
+    }
+
+    .blue-panel {
+      background: rgba(220, 232, 244, 0.62);
+      border: 1px solid rgba(73, 110, 155, 0.22);
+      border-radius: var(--radius);
+      padding: 34px;
+      box-shadow: 0 18px 44px rgba(25, 70, 74, 0.08);
+    }
+
+    .amber-panel {
+      background: rgba(244, 228, 201, 0.65);
+      border: 1px solid rgba(213, 155, 82, 0.28);
+      border-radius: var(--radius);
+      padding: 34px;
+      box-shadow: 0 18px 44px rgba(25, 70, 74, 0.08);
+    }
+
+    .list {
+      display: grid;
+      gap: 18px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list li {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 18px;
+      color: var(--ink);
+      font-size: 30px;
+      line-height: 1.34;
+    }
+
+    .list li::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      margin-top: 16px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .tiny {
+      color: var(--quiet);
+      font-size: 22px;
+      line-height: 1.4;
+    }
+
+    .mono {
+      font-family: var(--mono);
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 24px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.58));
+      border-radius: var(--radius);
+      padding: 30px;
+      min-height: 150px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      box-shadow: 0 16px 44px rgba(25, 70, 74, 0.08);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, var(--mint-strong), var(--cyan), var(--amber));
+      opacity: .72;
+    }
+
+    .card strong {
+      font-size: 31px;
+      line-height: 1.2;
+    }
+
+    .card span {
+      color: var(--muted);
+      font-size: 25px;
+      line-height: 1.36;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 24px;
+      white-space: nowrap;
+      box-shadow: 0 10px 26px rgba(25, 70, 74, 0.06);
+    }
+
+    .chip.teal {
+      background: rgba(219, 238, 231, 0.88);
+      border-color: rgba(139, 199, 180, 0.60);
+      color: #195f58;
+    }
+
+    .chip.blue {
+      background: rgba(220, 232, 244, 0.88);
+      border-color: rgba(73, 110, 155, 0.35);
+      color: #315a83;
+    }
+
+    .diagram {
+      display: grid;
+      gap: 24px;
+      align-content: center;
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .node {
+      flex: 1;
+      min-height: 118px;
+      border: 1px solid var(--line-strong);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.62));
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      font-size: 27px;
+      line-height: 1.22;
+      font-weight: 680;
+      box-shadow: 0 16px 38px rgba(25, 70, 74, 0.08);
+    }
+
+    .node.dark {
+      color: #f8fbf9;
+      background: #1f4c4a;
+      border-color: #1f4c4a;
+    }
+
+    .node.mint {
+      background: var(--mint);
+      border-color: rgba(139, 199, 180, 0.7);
+    }
+
+    .node.blue {
+      background: var(--blue-soft);
+      border-color: rgba(73, 110, 155, 0.35);
+    }
+
+    .node.hero-ai {
+      background: linear-gradient(135deg, rgba(42, 105, 101, 0.98), rgba(54, 134, 142, 0.94));
+      border-color: rgba(171, 244, 226, 0.50);
+      color: #f6fffb;
+      box-shadow: 0 18px 44px rgba(0, 24, 30, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    }
+
+    .arrow {
+      color: var(--quiet);
+      font-size: 42px;
+      line-height: 1;
+    }
+
+    .codebox {
+      background: linear-gradient(135deg, #132225, #203d40);
+      color: #edf6f1;
+      border-radius: var(--radius);
+      padding: 30px;
+      font: 26px/1.55 var(--mono);
+      white-space: pre-wrap;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 24px 58px rgba(0, 28, 33, .18);
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      height: 100%;
+      align-items: stretch;
+    }
+
+    .compare .side {
+      padding: 34px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.64);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 22px;
+    }
+
+    .table {
+      display: grid;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: .7fr 1fr 1.2fr;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-row:last-child {
+      border-bottom: 0;
+    }
+
+    .table-row > div {
+      padding: 22px 24px;
+      font-size: 25px;
+      line-height: 1.34;
+      border-right: 1px solid var(--line);
+    }
+
+    .table-row > div:last-child {
+      border-right: 0;
+    }
+
+    .table-head {
+      background: rgba(219, 238, 231, 0.72);
+      font-weight: 760;
+    }
+
+    .number-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+    }
+
+    .number-card {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.66);
+      border-radius: var(--radius);
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+      min-height: 208px;
+    }
+
+    .num {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #f9fffc;
+      background: linear-gradient(135deg, var(--teal), var(--cyan));
+      font: 700 24px var(--mono);
+      box-shadow: 0 16px 34px rgba(15, 143, 131, .24);
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .phase {
+      min-height: 360px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.65);
+      border-radius: var(--radius);
+      padding: 26px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 18px;
+    }
+
+    .phase .num {
+      background: #315f7e;
+    }
+
+    .phase strong {
+      font-size: 28px;
+      line-height: 1.16;
+    }
+
+    .phase p {
+      color: var(--muted);
+      font-size: 23px;
+      line-height: 1.36;
+    }
+
+    .callout {
+      border-left: 8px solid var(--teal);
+      padding: 18px 0 18px 28px;
+      color: var(--ink);
+      font-size: 38px;
+      line-height: 1.32;
+      font-weight: 660;
+    }
+
+    .topline {
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: end;
+      gap: 42px;
+    }
+
+    .topline p {
+      max-width: 1160px;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1.42;
+    }
+
+    .big-word {
+      color: rgba(31, 127, 116, 0.12);
+      font-size: 250px;
+      font-weight: 820;
+      line-height: .82;
+      position: absolute;
+      right: 90px;
+      bottom: 60px;
+      pointer-events: none;
+    }
+
+    .gradient-text {
+      background: linear-gradient(110deg, #102025 0%, #0f8f83 44%, #366ca1 82%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-title {
+      line-height: 1.12;
+      padding: 10px 0 16px;
+    }
+
+    .one-line {
+      max-width: none;
+      white-space: nowrap;
+      text-wrap: nowrap;
+    }
+
+    .title-tight {
+      font-size: 66px;
+    }
+
+    .title-compact {
+      font-size: 62px;
+    }
+
+    .slide:nth-child(4n) .gradient-text {
+      background: linear-gradient(110deg, #ffffff, #b7fff0 42%, #a7ddff 82%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .controls {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .nav-button {
+      height: 44px;
+      min-width: 86px;
+      padding: 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      border-radius: 999px;
+      background: rgba(29, 42, 47, 0.66);
+      color: #fff;
+      font-size: 17px;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+    }
+
+    .nav-button:hover,
+    .nav-button:focus-visible {
+      background: rgba(29, 42, 47, 0.86);
+      outline: 2px solid rgba(139, 199, 180, 0.6);
+      outline-offset: 2px;
+    }
+
+    .slide-counter {
+      position: fixed;
+      right: 24px;
+      bottom: 26px;
+      z-index: 20;
+      color: #fff;
+      font: 600 18px var(--mono);
+      background: rgba(29, 42, 47, 0.66);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      padding: 8px 12px;
+      backdrop-filter: blur(14px);
+    }
+
+    .progress {
+      position: fixed;
+      left: 24px;
+      bottom: 34px;
+      z-index: 20;
+      width: 220px;
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(29, 42, 47, 0.16);
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: var(--teal);
+      transition: width 240ms ease;
+    }
+
+    .hint {
+      position: fixed;
+      left: 24px;
+      top: 24px;
+      z-index: 20;
+      color: rgba(29, 42, 47, 0.60);
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.50);
+      border: 1px solid rgba(255, 255, 255, 0.64);
+      border-radius: 999px;
+      padding: 8px 12px;
+      backdrop-filter: blur(12px);
+    }
+
+    .accent-line {
+      width: 184px;
+      height: 10px;
+      background: linear-gradient(90deg, var(--teal), var(--mint-strong), var(--amber));
+      border-radius: 999px;
+      margin: 30px 0 38px;
+    }
+
+    .hero-card {
+      position: relative;
+      min-height: 456px;
+      border-radius: 34px;
+      padding: 32px;
+      background:
+        linear-gradient(135deg, rgba(16,32,37,.96), rgba(19,62,65,.94) 52%, rgba(28,90,105,.92)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, transparent 1px 58px);
+      color: #f8fffd;
+      overflow: hidden;
+      box-shadow: 0 30px 76px rgba(0, 29, 35, .24);
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -120px 26%;
+      height: 260px;
+      transform: rotate(-8deg);
+      background: linear-gradient(90deg, rgba(88,209,181,.72), rgba(70,185,232,.62), rgba(240,169,75,.70));
+      opacity: .78;
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 26px;
+    }
+
+    .metric {
+      padding: 18px 20px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 18px;
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 31px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .metric span {
+      color: rgba(248,255,253,.70);
+      font-size: 20px;
+      line-height: 1.28;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck-shell">
+    <div class="stage" id="stage">
+      <section class="slide active" data-screen-label="01 标题">
+        <div class="slide-content layout-title">
+          <div>
+            <div class="eyebrow">MCP · Server · Gateway</div>
+            <h1 class="gradient-text one-line hero-title">面向 AI 应用集成的 MCP 与网关</h1>
+            <div class="accent-line"></div>
+          </div>
+          <div class="hero-card">
+            <div class="eyebrow" style="color:#c7fff0;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);">能力织网</div>
+            <h3 style="font-size:48px;max-width:1000px;white-space:nowrap;position:relative;z-index:1;">能力接入，统一治理</h3>
+            <div class="metric-strip" style="position:relative;z-index:1;">
+              <div class="metric"><strong>工具</strong><span>动作与查询能力</span></div>
+              <div class="metric"><strong>资源</strong><span>上下文与数据资源</span></div>
+              <div class="metric"><strong>网关</strong><span>权限、策略、审计</span></div>
+            </div>
+            <div class="diagram" style="position:relative;z-index:1;margin-top:42px;">
+              <div class="flow">
+                <div class="node hero-ai">AI 应用</div>
+                <div class="arrow" style="color:rgba(255,255,255,.72);">→</div>
+                <div class="node dark">MCP<br>Gateway</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="02 背景">
+        <div class="slide-content layout-two">
+          <div>
+            <div class="eyebrow">背景</div>
+            <h2 class="one-line">AI 应用必须连接企业的真实世界</h2>
+            <p class="lead" style="margin-top: 28px;">大模型负责推理和生成，企业任务的落地依赖当前、准确、受控的外部上下文与动作。</p>
+          </div>
+          <div class="grid-2">
+            <div class="card"><strong>读项目文档</strong><span>规范、接口说明、产品手册、知识库。</span></div>
+            <div class="card"><strong>查业务数据</strong><span>主数据、数据库、指标、日志、告警。</span></div>
+            <div class="card"><strong>调用内部 API</strong><span>查询、校验、创建工单、提交审批。</span></div>
+            <div class="card"><strong>组织业务流程</strong><span>把多个系统能力串成一个可执行任务。</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="03 痛点">
+        <div class="slide-content layout-stack">
+          <div class="topline">
+            <div>
+              <div class="eyebrow">痛点</div>
+              <h2 class="one-line">点对点集成会逐渐失控</h2>
+            </div>
+            <p>问题不只是“能不能调 API”，而是能否标准化、可治理地接入外部能力。</p>
+          </div>
+          <div class="compare">
+            <div class="side">
+              <h3>重复对接</h3>
+              <div class="codebox">Agent A → 主数据 API / 知识库 API / 日志平台 API
+Agent B → 主数据 API / 知识库 API / 日志平台 API
+Agent C → ...</div>
+            </div>
+            <div class="side">
+              <h3>治理分散</h3>
+              <ul class="list">
+                <li>能力不可发现，工具清单难以统一。</li>
+                <li>权限、审计、错误处理散落在各处。</li>
+                <li>工具描述、参数格式、返回结果不一致。</li>
+                <li>高风险调用缺少统一阻断和确认。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="04 定义">
+        <div class="slide-content layout-center">
+          <div>
+            <div class="eyebrow">核心定义</div>
+            <h2 class="one-line" style="margin: 0 auto 44px;">MCP 标准化连接外部能力</h2>
+            <div class="callout">MCP 把外部系统包装成 AI 应用可理解、可调用、可治理的标准能力。</div>
+            <div class="chip-row" style="justify-content: center; margin-top: 46px;">
+              <span class="chip teal">能力发现</span>
+              <span class="chip teal">参数描述</span>
+              <span class="chip teal">上下文读取</span>
+              <span class="chip teal">工具调用</span>
+              <span class="chip teal">结果返回</span>
+              <span class="chip teal">能力协商</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="05 角色">
+        <div class="slide-content layout-stack">
+          <div class="topline">
+            <div>
+              <div class="eyebrow">四个角色</div>
+              <h2 class="one-line">先看协作关系，再看协议细节</h2>
+            </div>
+            <p>Host 管体验和决策，Client 管连接，Server 管能力适配，Gateway 管企业治理。</p>
+          </div>
+          <div class="diagram" style="align-content: start;">
+            <div class="flow">
+              <div class="node">用户</div>
+              <div class="arrow">→</div>
+              <div class="node mint">MCP Host<br>AI 应用</div>
+              <div class="arrow">→</div>
+              <div class="node mint">MCP Client</div>
+              <div class="arrow">→</div>
+              <div class="node dark">MCP Server<br>能力适配器</div>
+              <div class="arrow">→</div>
+              <div class="node blue">外部系统</div>
+            </div>
+            <div class="grid-4">
+              <div class="card"><strong>Host</strong><span>用户体验、模型调用、权限决策。</span></div>
+              <div class="card"><strong>Client</strong><span>由 Host 创建，连接某个 Server。</span></div>
+              <div class="card"><strong>Server</strong><span>把业务系统包装成 MCP 能力。</span></div>
+              <div class="card"><strong>Gateway</strong><span>统一入口、策略、审计、观测。</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="06 设计">
+        <div class="slide-content layout-two">
+          <div>
+            <div class="eyebrow">能力设计</div>
+            <h2 class="one-line">MCP Server 的关键是能力边界</h2>
+            <p class="lead" style="margin-top: 28px;">它不是把 API 原样透出，而是把业务系统能力整理成适合 AI 使用的接口。</p>
+          </div>
+          <div class="grid-2">
+            <div class="card"><strong>业务域</strong><span>这个 Server 代表哪个系统或能力域？</span></div>
+            <div class="card"><strong>上下文</strong><span>哪些内容可以被读取给模型？</span></div>
+            <div class="card"><strong>动作</strong><span>哪些工具会产生副作用？</span></div>
+            <div class="card"><strong>风险</strong><span>哪些需要人工确认、审批、审计？</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="07 能力">
+        <div class="slide-content layout-stack">
+          <div>
+            <div class="eyebrow">核心能力</div>
+            <h2 class="one-line">工具、资源与提示模板</h2>
+          </div>
+          <div class="grid-3">
+            <div class="soft-panel">
+              <h3>工具</h3>
+              <p class="lead" style="font-size: 31px; margin-top: 20px;">AI 能做什么</p>
+              <div class="chip-row" style="margin-top: 32px;">
+                <span class="chip">查主数据</span>
+                <span class="chip">创建工单</span>
+                <span class="chip">跑查询</span>
+              </div>
+            </div>
+            <div class="blue-panel">
+              <h3>资源</h3>
+              <p class="lead" style="font-size: 31px; margin-top: 20px;">AI 能看什么</p>
+              <div class="chip-row" style="margin-top: 32px;">
+                <span class="chip">文档</span>
+                <span class="chip">日志</span>
+                <span class="chip">主数据记录</span>
+              </div>
+            </div>
+            <div class="amber-panel">
+              <h3>提示模板</h3>
+              <p class="lead" style="font-size: 31px; margin-top: 20px;">经验如何模板化</p>
+              <div class="chip-row" style="margin-top: 32px;">
+                <span class="chip">故障分析</span>
+                <span class="chip">数据治理</span>
+                <span class="chip">代码审查</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="08 调用链">
+        <div class="slide-content layout-stack">
+          <div class="topline">
+            <div>
+              <div class="eyebrow">调用链</div>
+              <h2 class="one-line">一次 MCP 工具调用链</h2>
+            </div>
+            <p>用户提出查询诉求，AI 判断需要调用工具，Gateway 校验权限并路由到对应 MCP Server。</p>
+          </div>
+          <div class="diagram">
+            <div class="flow">
+              <div class="node">用户</div>
+              <div class="arrow">→</div>
+              <div class="node mint">AI 应用</div>
+              <div class="arrow">→</div>
+              <div class="node mint">大模型判断</div>
+              <div class="arrow">→</div>
+              <div class="node">MCP Client</div>
+            </div>
+            <div class="flow">
+              <div class="node dark">数据 MCP Server</div>
+              <div class="arrow">→</div>
+              <div class="node blue">主数据平台</div>
+              <div class="arrow">→</div>
+              <div class="node mint">记录详情<br>字段规则<br>处理建议</div>
+            </div>
+            <div class="chip-row">
+              <span class="chip teal">get_master_data</span>
+              <span class="chip teal">get_field_rules</span>
+              <span class="chip blue">权限校验</span>
+              <span class="chip blue">结果脱敏</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="09 示例">
+        <div class="slide-content layout-two">
+          <div>
+            <div class="eyebrow">调用示例</div>
+            <h2 class="one-line">MCP 服务调用示例</h2>
+            <p class="lead" style="margin-top: 28px;">以主数据查询为例，AI 应用通过工具描述识别能力，再由网关完成权限、路由、审计和结果处理。</p>
+          </div>
+          <div class="grid-2">
+            <div class="card"><strong>识别工具</strong><span>模型根据工具名称、参数和描述选择能力。</span></div>
+            <div class="card"><strong>网关校验</strong><span>按用户、角色、租户和策略判断是否允许调用。</span></div>
+            <div class="card"><strong>服务执行</strong><span>MCP Server 调用主数据平台并整理返回结构。</span></div>
+            <div class="card"><strong>结果治理</strong><span>脱敏、审计、观测，并把结果交还给 AI 应用。</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="10 网关">
+        <div class="slide-content layout-stack">
+          <div class="topline">
+            <div>
+              <div class="eyebrow">网关价值</div>
+              <h2 class="one-line">能力多了以后，治理更关键</h2>
+            </div>
+            <p>MCP Server 解决怎么接能力，MCP Gateway 解决能力多了以后怎么管。</p>
+          </div>
+          <div class="compare">
+            <div class="side">
+              <h3>直连模式</h3>
+              <ul class="list">
+                <li>每个 Agent 配置多个 Server。</li>
+                <li>权限策略散落在不同系统。</li>
+                <li>工具命名和描述容易冲突。</li>
+                <li>高风险调用难以统一阻断。</li>
+              </ul>
+            </div>
+            <div class="side" style="background: rgba(219, 238, 231, 0.60);">
+              <h3>网关模式</h3>
+              <ul class="list">
+                <li>统一入口和工具目录。</li>
+                <li>按用户、角色、租户过滤能力。</li>
+                <li>统一审计、策略和观测。</li>
+                <li>把请求路由到正确 MCP Server。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="11 职责">
+        <div class="slide-content layout-stack">
+          <div>
+            <div class="eyebrow">网关职责</div>
+            <h2 class="one-line title-tight">MCP Gateway 是外部能力治理入口</h2>
+          </div>
+          <div class="grid-4">
+            <div class="card"><strong>服务注册</strong><span>企业内部 MCP 能力目录。</span></div>
+            <div class="card"><strong>工具目录</strong><span>AI 应用可用能力清单。</span></div>
+            <div class="card"><strong>权限控制</strong><span>防止越权调用。</span></div>
+            <div class="card"><strong>策略治理</strong><span>确认、阻断、脱敏。</span></div>
+            <div class="card"><strong>统一入口</strong><span>降低 Agent 接入复杂度。</span></div>
+            <div class="card"><strong>路由转发</strong><span>转到后端 MCP Server。</span></div>
+            <div class="card"><strong>审计日志</strong><span>调用过程可追溯。</span></div>
+            <div class="card"><strong>可观测性</strong><span>延迟、失败率、调用量。</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="12 边界">
+        <div class="slide-content layout-stack">
+          <div class="topline">
+            <div>
+              <div class="eyebrow">边界</div>
+              <h2 class="one-line title-compact">三类网关管的对象不同</h2>
+            </div>
+          </div>
+          <div class="table">
+            <div class="table-row table-head">
+              <div>类型</div>
+              <div>管什么</div>
+              <div>典型问题</div>
+            </div>
+            <div class="table-row">
+              <div>API Gateway</div>
+              <div>业务 API 流量</div>
+              <div>路由、鉴权、限流、熔断</div>
+            </div>
+            <div class="table-row">
+              <div>AI Gateway</div>
+              <div>模型调用流量</div>
+              <div>模型路由、成本、token、内容安全</div>
+            </div>
+            <div class="table-row">
+              <div>MCP Gateway</div>
+              <div>工具和上下文能力</div>
+              <div>工具治理、资源访问、MCP 会话、审计</div>
+            </div>
+          </div>
+          <div class="codebox">AI 应用 → AI Gateway → 模型服务
+AI 应用 → MCP Gateway → MCP Server → API Gateway → 业务系统</div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="13 方法">
+        <div class="slide-content layout-stack">
+          <div>
+            <div class="eyebrow">设计方法</div>
+            <h2 class="one-line">先问 AI 场景，再设计 MCP 能力</h2>
+          </div>
+          <div class="number-grid">
+            <div class="number-card">
+              <div class="num">1</div>
+              <h3>识别场景</h3>
+              <p class="tiny">用户希望 AI 完成什么任务？</p>
+            </div>
+            <div class="number-card">
+              <div class="num">2</div>
+              <h3>区分能力</h3>
+              <p class="tiny">AI 需要看什么，做什么？</p>
+            </div>
+            <div class="number-card">
+              <div class="num">3</div>
+              <h3>风险分级</h3>
+              <p class="tiny">只读、敏感只读、低风险写、高风险动作。</p>
+            </div>
+            <div class="number-card">
+              <div class="num">4</div>
+              <h3>网关策略</h3>
+              <p class="tiny">目录、权限、审计、审批、多租户。</p>
+            </div>
+          </div>
+          <div class="soft-panel">
+            <div class="chip-row">
+              <span class="chip teal">看：业务记录</span>
+              <span class="chip teal">看：系统文档</span>
+              <span class="chip teal">看：日志指标</span>
+              <span class="chip blue">做：创建工单</span>
+              <span class="chip blue">做：提交审批</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="14 风险">
+        <div class="slide-content layout-stack">
+          <div class="topline">
+            <div>
+              <div class="eyebrow">企业风险</div>
+              <h2 class="one-line title-tight">风险来自模型可以使用外部能力</h2>
+            </div>
+            <p>协议本身不是风险源，关键是工具、资源、权限和组合行为如何被治理。</p>
+          </div>
+          <div class="grid-2">
+            <div class="card"><strong>Prompt Injection</strong><span>外部内容诱导模型调用敏感工具。</span></div>
+            <div class="card"><strong>资源越权读取</strong><span>读取不该看的业务数据或日志。</span></div>
+            <div class="card"><strong>工具组合风险</strong><span>多个低风险工具组合后造成泄露。</span></div>
+            <div class="card"><strong>影子 MCP Server</strong><span>未经审核的服务被接入。</span></div>
+          </div>
+          <div class="chip-row">
+            <span class="chip teal">绑定用户身份</span>
+            <span class="chip teal">高风险确认</span>
+            <span class="chip teal">敏感数据脱敏</span>
+            <span class="chip teal">服务注册审核</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="15 路线">
+        <div class="slide-content layout-stack">
+          <div>
+            <div class="eyebrow">落地路线</div>
+            <h2 class="one-line title-compact">从只读场景到网关治理</h2>
+          </div>
+          <div class="timeline">
+            <div class="phase">
+              <div class="num">1</div>
+              <strong>只读资源接入</strong>
+              <p>知识库、文档、FAQ、项目 README。</p>
+            </div>
+            <div class="phase">
+              <div class="num">2</div>
+              <strong>低风险查询工具</strong>
+              <p>查主数据状态、查日志、查指标。</p>
+            </div>
+            <div class="phase">
+              <div class="num">3</div>
+              <strong>受控写操作</strong>
+              <p>创建工单、生成报告、发起草稿。</p>
+            </div>
+            <div class="phase">
+              <div class="num">4</div>
+              <strong>高风险动作治理</strong>
+              <p>合并、删除、发布、权限变更。</p>
+            </div>
+            <div class="phase">
+              <div class="num">5</div>
+              <strong>网关平台化</strong>
+              <p>注册、目录、鉴权、策略、审计、观测。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="16 总结">
+        <div class="slide-content layout-center">
+          <div>
+            <div class="eyebrow">总结</div>
+            <h2 class="one-line" style="margin: 0 auto 44px;">MCP 解决接入，Gateway 解决治理</h2>
+            <div class="grid-2" style="text-align: left;">
+              <div class="card"><strong>MCP</strong><span>AI 应用如何标准化连接外部能力。</span></div>
+              <div class="card"><strong>MCP Server</strong><span>把业务系统包装成能力适配器。</span></div>
+              <div class="card"><strong>工具 / 资源 / 提示模板</strong><span>分别对应能做什么、能看什么、经验如何复用。</span></div>
+              <div class="card"><strong>MCP Gateway</strong><span>统一入口、权限、策略、审计和治理。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="big-word">MCP</div>
+      </section>
+
+      <section class="slide" data-screen-label="17 问答">
+        <div class="slide-content layout-two">
+          <div>
+            <div class="eyebrow">问答</div>
+            <h2 class="one-line">可以提前准备的几个问题</h2>
+            <p class="lead" style="margin-top: 28px;">围绕协议边界、网关边界和服务规模，常见疑问可以收敛到这几类。</p>
+          </div>
+          <div class="grid-2">
+            <div class="card"><strong>MCP 会替代 API 吗？</strong><span>不会，它是在 AI 应用和业务 API 之间增加面向模型的能力适配。</span></div>
+            <div class="card"><strong>已有 API Gateway 还需要 MCP Gateway 吗？</strong><span>两者管的对象不同，一个管 API 流量，一个管工具和上下文能力。</span></div>
+            <div class="card"><strong>模型能不能直接调 API？</strong><span>生产环境风险较高，权限、审计、参数校验会变得分散。</span></div>
+            <div class="card"><strong>MCP Server 越多越好吗？</strong><span>不是，应该按清晰能力域设计，避免治理成本失控。</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="hint">← → / Space 翻页</div>
+  <div class="controls" aria-label="幻灯片控制">
+    <button class="nav-button" id="prevBtn" type="button">上一页</button>
+    <button class="nav-button" id="nextBtn" type="button">下一页</button>
+  </div>
+  <div class="slide-counter" id="counter">1 / 17</div>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+  <script>
+    (function () {
+      const stage = document.getElementById('stage');
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const counter = document.getElementById('counter');
+      const progressBar = document.getElementById('progressBar');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const storageKey = 'mcp-ai-integration-deck-slide';
+      const params = new URLSearchParams(window.location.search);
+      const requestedSlide = Number.parseInt(params.get('slide') || '', 10);
+      let current = Number.isFinite(requestedSlide)
+        ? requestedSlide - 1
+        : Number.parseInt(localStorage.getItem(storageKey) || '0', 10);
+
+      function fitStage() {
+        const scaleX = window.innerWidth / 1920;
+        const scaleY = window.innerHeight / 1080;
+        const scale = Math.min(scaleX, scaleY);
+        stage.style.transform = `scale(${scale})`;
+      }
+
+      function showSlide(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, slideIndex) => {
+          slide.classList.toggle('active', slideIndex === current);
+        });
+        counter.textContent = `${current + 1} / ${slides.length}`;
+        progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
+        localStorage.setItem(storageKey, String(current));
+      }
+
+      function go(delta) {
+        showSlide(current + delta);
+      }
+
+      window.addEventListener('resize', fitStage);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight' || event.key === ' ') {
+          event.preventDefault();
+          go(1);
+        }
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          go(-1);
+        }
+        if (event.key === 'Home') {
+          event.preventDefault();
+          showSlide(0);
+        }
+        if (event.key === 'End') {
+          event.preventDefault();
+          showSlide(slides.length - 1);
+        }
+      });
+      prevBtn.addEventListener('click', () => go(-1));
+      nextBtn.addEventListener('click', () => go(1));
+
+      fitStage();
+      showSlide(current);
+    })();
+  </script>
+</body>
+</html>
