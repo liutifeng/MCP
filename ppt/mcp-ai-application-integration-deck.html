@@ -408,6 +408,87 @@
       grid-template-columns: repeat(4, 1fr);
     }
 
+    .agenda-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 28px;
+      align-items: stretch;
+      min-height: 620px;
+    }
+
+    .agenda-main {
+      display: grid;
+      grid-template-rows: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .agenda-side {
+      display: grid;
+      grid-template-rows: repeat(2, 1fr);
+      gap: 22px;
+    }
+
+    .agenda-item {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(139, 199, 180, 0.42);
+      border-radius: var(--radius);
+      padding: 30px 34px;
+      background:
+        radial-gradient(circle at top right, rgba(88, 209, 181, 0.24), transparent 42%),
+        linear-gradient(135deg, rgba(255,255,255,.84), rgba(219,238,231,.52));
+      box-shadow: 0 18px 44px rgba(25, 70, 74, 0.08);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 22px;
+      align-content: center;
+    }
+
+    .agenda-item.emphasis {
+      background:
+        radial-gradient(circle at top right, rgba(94, 174, 217, 0.28), transparent 45%),
+        linear-gradient(135deg, rgba(23, 47, 55, 0.96), rgba(35, 92, 93, 0.92));
+      border-color: rgba(255, 255, 255, 0.14);
+      color: #f7fffb;
+    }
+
+    .agenda-index {
+      width: 76px;
+      height: 76px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      color: #f7fffb;
+      background: linear-gradient(135deg, var(--teal), var(--cyan));
+      font: 800 28px var(--mono);
+      box-shadow: 0 16px 32px rgba(25, 95, 88, 0.20);
+    }
+
+    .agenda-item.emphasis .agenda-index {
+      color: #173037;
+      background: linear-gradient(135deg, #c7fff0, #eec36a);
+    }
+
+    .agenda-text {
+      display: grid;
+      gap: 10px;
+    }
+
+    .agenda-text strong {
+      font-size: 34px;
+      line-height: 1.1;
+    }
+
+    .agenda-text span {
+      color: var(--muted);
+      font-size: 24px;
+      line-height: 1.34;
+    }
+
+    .agenda-item.emphasis .agenda-text span {
+      color: rgba(247, 255, 251, 0.72);
+    }
+
     .card {
       border: 1px solid var(--line);
       background:
@@ -902,7 +983,57 @@
         </div>
       </section>
 
-      <section class="slide" data-screen-label="02 背景">
+      <section class="slide" data-screen-label="02 目录">
+        <div class="slide-content layout-stack">
+          <div>
+            <div class="eyebrow">目录</div>
+            <h2 class="one-line">先建立认知，再看网关治理</h2>
+          </div>
+          <div class="agenda-grid">
+            <div class="agenda-main">
+              <div class="agenda-item emphasis">
+                <div class="agenda-index">01</div>
+                <div class="agenda-text">
+                  <strong>AI 应用为什么需要 MCP</strong>
+                  <span>外部能力接入、点对点集成痛点、标准化价值。</span>
+                </div>
+              </div>
+              <div class="agenda-item">
+                <div class="agenda-index">02</div>
+                <div class="agenda-text">
+                  <strong>MCP 的核心角色</strong>
+                  <span>Host、Client、Server 的协作关系。</span>
+                </div>
+              </div>
+              <div class="agenda-item">
+                <div class="agenda-index">03</div>
+                <div class="agenda-text">
+                  <strong>MCP Server 怎么设计能力</strong>
+                  <span>工具、资源、提示模板，以及一次工具调用链。</span>
+                </div>
+              </div>
+            </div>
+            <div class="agenda-side">
+              <div class="agenda-item">
+                <div class="agenda-index">04</div>
+                <div class="agenda-text">
+                  <strong>MCP Gateway 管什么</strong>
+                  <span>入口、目录、路由、权限、策略、审计、观测。</span>
+                </div>
+              </div>
+              <div class="agenda-item emphasis">
+                <div class="agenda-index">05</div>
+                <div class="agenda-text">
+                  <strong>落地路径与常见问题</strong>
+                  <span>从只读能力到网关平台化，最后回到边界判断。</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-screen-label="03 背景">
         <div class="slide-content layout-two">
           <div>
             <div class="eyebrow">背景</div>
@@ -918,7 +1049,7 @@
         </div>
       </section>
 
-      <section class="slide" data-screen-label="03 痛点">
+      <section class="slide" data-screen-label="04 痛点">
         <div class="slide-content layout-stack">
           <div class="topline">
             <div>
@@ -947,7 +1078,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="04 定义">
+      <section class="slide" data-screen-label="05 定义">
         <div class="slide-content layout-center">
           <div>
             <div class="eyebrow">核心定义</div>
@@ -965,7 +1096,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="05 角色">
+      <section class="slide" data-screen-label="06 角色">
         <div class="slide-content layout-stack">
           <div class="topline">
             <div>
@@ -996,7 +1127,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="06 设计">
+      <section class="slide" data-screen-label="07 设计">
         <div class="slide-content layout-two">
           <div>
             <div class="eyebrow">能力设计</div>
@@ -1012,7 +1143,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="07 能力">
+      <section class="slide" data-screen-label="08 能力">
         <div class="slide-content layout-stack">
           <div>
             <div class="eyebrow">核心能力</div>
@@ -1050,7 +1181,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="08 调用链">
+      <section class="slide" data-screen-label="09 调用链">
         <div class="slide-content layout-stack">
           <div class="topline">
             <div>
@@ -1086,7 +1217,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="09 示例">
+      <section class="slide" data-screen-label="10 示例">
         <div class="slide-content layout-two">
           <div>
             <div class="eyebrow">调用示例</div>
@@ -1102,7 +1233,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="10 网关">
+      <section class="slide" data-screen-label="11 网关">
         <div class="slide-content layout-stack">
           <div class="topline">
             <div>
@@ -1134,7 +1265,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="11 职责">
+      <section class="slide" data-screen-label="12 职责">
         <div class="slide-content layout-stack">
           <div>
             <div class="eyebrow">网关职责</div>
@@ -1153,7 +1284,7 @@ Agent C → ...</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="12 边界">
+      <section class="slide" data-screen-label="13 边界">
         <div class="slide-content layout-stack">
           <div class="topline">
             <div>
@@ -1188,7 +1319,7 @@ AI 应用 → MCP Gateway → MCP Server → API Gateway → 业务系统</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="13 方法">
+      <section class="slide" data-screen-label="14 方法">
         <div class="slide-content layout-stack">
           <div>
             <div class="eyebrow">设计方法</div>
@@ -1228,7 +1359,7 @@ AI 应用 → MCP Gateway → MCP Server → API Gateway → 业务系统</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="14 风险">
+      <section class="slide" data-screen-label="15 风险">
         <div class="slide-content layout-stack">
           <div class="topline">
             <div>
@@ -1252,7 +1383,7 @@ AI 应用 → MCP Gateway → MCP Server → API Gateway → 业务系统</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="15 路线">
+      <section class="slide" data-screen-label="16 路线">
         <div class="slide-content layout-stack">
           <div>
             <div class="eyebrow">落地路线</div>
@@ -1288,7 +1419,7 @@ AI 应用 → MCP Gateway → MCP Server → API Gateway → 业务系统</div>
         </div>
       </section>
 
-      <section class="slide" data-screen-label="16 总结">
+      <section class="slide" data-screen-label="17 总结">
         <div class="slide-content layout-center">
           <div>
             <div class="eyebrow">总结</div>
@@ -1304,7 +1435,7 @@ AI 应用 → MCP Gateway → MCP Server → API Gateway → 业务系统</div>
         <div class="big-word">MCP</div>
       </section>
 
-      <section class="slide" data-screen-label="17 问答">
+      <section class="slide" data-screen-label="18 问答">
         <div class="slide-content layout-two">
           <div>
             <div class="eyebrow">问答</div>
@@ -1327,7 +1458,7 @@ AI 应用 → MCP Gateway → MCP Server → API Gateway → 业务系统</div>
     <button class="nav-button" id="prevBtn" type="button">上一页</button>
     <button class="nav-button" id="nextBtn" type="button">下一页</button>
   </div>
-  <div class="slide-counter" id="counter">1 / 17</div>
+  <div class="slide-counter" id="counter">1 / 18</div>
   <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
 
   <script>
