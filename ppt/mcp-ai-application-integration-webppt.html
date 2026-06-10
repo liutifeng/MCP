@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>面向 AI 应用集成的 MCP 与网关</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ===========================================
+       CSS CUSTOM PROPERTIES (THEME)
+       =========================================== */
+    :root {
+      --stage-bg: #d7dce2;
+      --slide-bg: #f8f9fb;
+      --paper: #f8f9fb;
+      --paper-2: #eef2f5;
+      --ink: #202733;
+      --muted: #657180;
+      --faint: rgba(32, 39, 51, .07);
+      --rule: rgba(32, 39, 51, .16);
+      --heavy: rgba(32, 39, 51, .62);
+      --red: #8c4b3f;
+      --red-soft: rgba(140, 75, 63, .08);
+      --blue: #3d648c;
+      --blue-soft: rgba(61, 100, 140, .10);
+      --olive: #6d7a68;
+      --gold: #9b7b46;
+      --font-display: "Noto Sans SC", sans-serif;
+      --font-body: "Noto Sans SC", sans-serif;
+      --font-mono: "IBM Plex Mono", monospace;
+      --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+      --duration-normal: .38s;
+    }
+
+    /* ===========================================
+       BASE RESET
+       =========================================== */
+    * { box-sizing: border-box; }
+    body { color: var(--ink); font-family: var(--font-body); }
+    button { font-family: inherit; }
+
+    /* ===========================================
+       FIXED 16:9 STAGE: MANDATORY BASE STYLES
+       Include this ENTIRE file in every presentation.
+       Slides are authored at 1920×1080 and scaled as a whole.
+       =========================================== */
+
+    /* 1. Lock the browser viewport */
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--stage-bg, #000);
+    }
+
+    /* 2. Full-window deck viewport */
+    .deck-viewport {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        background: var(--stage-bg, #000);
+    }
+
+    /* 3. Fixed 16:9 design canvas.
+       JavaScript sets transform: translate(...) scale(...). */
+    .deck-stage {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        transform-origin: 0 0;
+        background: var(--slide-bg, #fff);
+    }
+
+    /* 4. Slides stack inside the fixed stage.
+       Content must be laid out at 1920×1080, not reflowed per device. */
+    .slide {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        background: var(--slide-bg, #fff);
+    }
+
+    .slide.active,
+    .slide.visible {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 1;
+    }
+
+    /* 5. Keep media inside authored slide bounds */
+    img,
+    video,
+    canvas,
+    svg {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    /* 6. Presentation chrome stays outside the slide design system */
+    .deck-controls {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        z-index: 1000;
+    }
+
+    /* 7. Print one fixed-size slide per page */
+    @media print {
+        html,
+        body {
+            width: 1920px;
+            height: auto;
+            overflow: visible;
+            background: #fff;
+        }
+
+        .deck-viewport {
+            position: static;
+            overflow: visible;
+            background: #fff;
+        }
+
+        .deck-stage {
+            position: static;
+            width: auto;
+            height: auto;
+            transform: none !important;
+            background: none;
+        }
+
+        .slide {
+            position: relative;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            width: 1920px;
+            height: 1080px;
+            break-after: page;
+            page-break-after: always;
+        }
+
+        .slide:last-child {
+            break-after: auto;
+            page-break-after: auto;
+        }
+
+        .deck-controls {
+            display: none !important;
+        }
+    }
+
+    /* 8. Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.2s !important;
+        }
+    }
+
+    /* ===========================================
+       REPORT STAGE
+       =========================================== */
+    .deck-stage {
+      box-shadow: 0 24px 70px rgba(35, 45, 60, .20);
+    }
+
+    .slide {
+      padding: 74px 92px;
+      background:
+        linear-gradient(90deg, rgba(32,39,51,.035) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(32,39,51,.026) 0 1px, transparent 1px 100%),
+        linear-gradient(180deg, #fbfcfd, #f4f6f8);
+      background-size: 80px 80px, 80px 80px, auto;
+    }
+
+    .slide.reverse {
+      --slide-bg: #f1f4f7;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(32,39,51,.035) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(32,39,51,.026) 0 1px, transparent 1px 100%),
+        linear-gradient(180deg, #f3f6f8, #edf1f5);
+      background-size: 80px 80px, 80px 80px, auto;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      left: 92px;
+      right: 92px;
+      top: 48px;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    .slide::after {
+      content: attr(data-folio);
+      position: absolute;
+      right: 92px;
+      top: 48px;
+      color: var(--muted);
+      font: 600 17px/1 var(--font-mono);
+      letter-spacing: 0;
+      background: var(--slide-bg);
+      padding-left: 18px;
+      text-align: right;
+    }
+
+    .slide.reverse::after { color: var(--muted); }
+
+    /* ===========================================
+       TYPOGRAPHY
+       =========================================== */
+    h1, h2, h3, p { margin: 0; }
+    h1, h2 { font-family: var(--font-display); letter-spacing: 0; }
+    h1 { font-size: 88px; line-height: 1.08; font-weight: 800; }
+    h2 { font-size: 60px; line-height: 1.16; font-weight: 800; max-width: 1380px; }
+    h3 { font-size: 32px; line-height: 1.2; font-weight: 700; }
+    p, li { font-size: 26px; line-height: 1.46; }
+    .lead { color: var(--muted); font-size: 30px; line-height: 1.45; max-width: 1230px; }
+    .reverse .lead, .reverse .muted { color: var(--muted); }
+    .label {
+      display: inline-block;
+      color: var(--blue);
+      font: 700 18px/1 var(--font-body);
+      letter-spacing: 0;
+      border-left: 4px solid currentColor;
+      padding: 0 0 0 12px;
+      background: transparent;
+    }
+    .reverse .label { background: transparent; color: var(--blue); }
+    .mono { font-family: var(--font-mono); }
+    .red { color: var(--red); }
+    .blue { color: var(--blue); }
+    .module-bar {
+      position: absolute;
+      left: 92px;
+      top: 48px;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font: 600 17px/1 var(--font-body);
+      background: var(--slide-bg);
+      padding-right: 18px;
+    }
+    .module-index {
+      color: var(--blue);
+      font: 700 16px/1 var(--font-mono);
+    }
+    .module-title {
+      color: var(--ink);
+    }
+    .module-pages {
+      color: var(--muted);
+      font: 600 15px/1 var(--font-mono);
+    }
+    .module-1 { --module-color: #3d648c; }
+    .module-2 { --module-color: #5d735d; }
+    .module-3 { --module-color: #8c6a3d; }
+    .module-4 { --module-color: #6a5f8c; }
+    .module-5 { --module-color: #8c4b3f; }
+    .module-1 .module-index,
+    .module-2 .module-index,
+    .module-3 .module-index,
+    .module-4 .module-index,
+    .module-5 .module-index {
+      color: var(--module-color);
+    }
+    .module-1 .quote,
+    .module-2 .quote,
+    .module-3 .quote,
+    .module-4 .quote,
+    .module-5 .quote {
+      border-left-color: var(--module-color);
+    }
+
+    /* ===========================================
+       ANIMATIONS
+       =========================================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity var(--duration-normal) var(--ease-out-expo),
+                  transform var(--duration-normal) var(--ease-out-expo);
+    }
+
+    .slide.visible .reveal {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal:nth-child(1) { transition-delay: .06s; }
+    .reveal:nth-child(2) { transition-delay: .14s; }
+    .reveal:nth-child(3) { transition-delay: .22s; }
+    .reveal:nth-child(4) { transition-delay: .30s; }
+    .reveal:nth-child(5) { transition-delay: .38s; }
+
+    /* ===========================================
+       LAYOUT SYSTEM
+       =========================================== */
+    .frame {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: grid;
+      gap: 36px;
+    }
+    .title-frame { grid-template-columns: 1.05fr .95fr; align-items: center; gap: 70px; }
+    .stack-frame { grid-template-rows: auto 1fr; }
+    .split-frame { grid-template-columns: .9fr 1.1fr; align-items: stretch; gap: 48px; }
+    .center-frame { align-content: center; gap: 32px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+
+    /* ===========================================
+       DOCUMENT COMPONENTS
+       =========================================== */
+    .sheet, .tile, .stamp, .quote, .table, .ledger {
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,.72);
+      box-shadow: none;
+    }
+    .reverse .sheet, .reverse .tile, .reverse .stamp, .reverse .quote, .reverse .table, .reverse .ledger {
+      border-color: var(--rule);
+      background: rgba(255,255,255,.62);
+      box-shadow: none;
+    }
+    .sheet { padding: 30px; }
+    .tile { padding: 26px; min-height: 160px; }
+    .tile strong, .stamp strong {
+      display: block;
+      font-size: 29px;
+      line-height: 1.22;
+      margin-bottom: 12px;
+    }
+    .tile span, .stamp span {
+      display: block;
+      color: var(--muted);
+      font-size: 23px;
+      line-height: 1.38;
+    }
+    .reverse .tile span, .reverse .stamp span { color: var(--muted); }
+    .quote {
+      padding: 34px 38px;
+      border-left: 5px solid var(--blue);
+      font: 700 34px/1.42 var(--font-display);
+      background: rgba(255,255,255,.72);
+    }
+    .list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+    .list li {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      color: var(--muted);
+    }
+    .reverse .list li { color: var(--muted); }
+    .list li::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      margin-top: 15px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+    .ribbon {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .tag {
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,.68);
+      padding: 11px 14px;
+      font: 600 20px/1 var(--font-body);
+      color: var(--ink);
+    }
+    .reverse .tag { color: var(--ink); border-color: var(--rule); background: rgba(255,255,255,.68); }
+
+    /* ===========================================
+       DIAGRAMS
+       =========================================== */
+    .cover-map {
+      position: relative;
+      height: 700px;
+      border: 1px solid var(--rule);
+      background:
+        linear-gradient(90deg, rgba(32,39,51,.04) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(32,39,51,.035) 1px, transparent 1px),
+        rgba(255,255,255,.42);
+      background-size: 52px 52px, 52px 52px, auto;
+    }
+    .map-node {
+      position: absolute;
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,.86);
+      padding: 18px 18px;
+      font: 700 23px/1.1 var(--font-body);
+      min-width: 144px;
+      text-align: center;
+      color: var(--ink);
+    }
+    .map-node.redbox { border-color: rgba(140,75,63,.34); color: var(--ink); background: rgba(140,75,63,.06); }
+    .map-node.bluebox { border-color: rgba(61,100,140,.38); color: var(--ink); background: var(--blue-soft); }
+    .map-line {
+      position: absolute;
+      height: 2px;
+      background: rgba(61,100,140,.50);
+      transform-origin: left center;
+    }
+    .agent { left: 54px; top: 318px; }
+    .mcp { left: 226px; top: 318px; }
+    .gateway { left: 398px; top: 318px; }
+    .tools { right: 44px; top: 128px; }
+    .resources { right: 44px; top: 318px; }
+    .systems { right: 44px; top: 508px; }
+    .l1 { left: 198px; top: 352px; width: 32px; }
+    .l2 { left: 370px; top: 352px; width: 32px; }
+    .l3 { left: 542px; top: 352px; width: 95px; transform: rotate(-56deg); }
+    .l4 { left: 542px; top: 352px; width: 78px; }
+    .l5 { left: 542px; top: 352px; width: 96px; transform: rotate(56deg); }
+    .agenda-item {
+      min-height: 440px;
+      display: grid;
+      align-content: start;
+      gap: 18px;
+    }
+    .agenda-item span {
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.35;
+    }
+    .agenda-num {
+      font: 700 64px/1 var(--font-mono);
+      color: var(--blue);
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+    .flow .tile {
+      min-height: 150px;
+      text-align: center;
+      display: grid;
+      place-content: center;
+      box-shadow: none;
+    }
+    .arrow {
+      height: 2px;
+      background: var(--heavy);
+      position: relative;
+    }
+    .arrow::after {
+      content: "";
+      position: absolute;
+      right: -2px;
+      top: -7px;
+      border-left: 15px solid var(--heavy);
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+    }
+    .reverse .arrow { background: var(--heavy); }
+    .reverse .arrow::after { border-left-color: var(--heavy); }
+    .table { overflow: hidden; box-shadow: none; }
+    .row {
+      display: grid;
+      grid-template-columns: .8fr 1.05fr 1.2fr;
+    }
+    .row > div {
+      min-height: 94px;
+      padding: 22px 24px;
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      color: var(--muted);
+      font-size: 24px;
+      line-height: 1.35;
+    }
+    .row > div:last-child { border-right: 0; }
+    .row:last-child > div { border-bottom: 0; }
+    .row.head > div {
+      color: var(--ink);
+      font-weight: 900;
+      background: var(--blue-soft);
+    }
+    .reverse .row > div { color: var(--muted); border-color: var(--rule); }
+    .reverse .row.head > div { color: var(--ink); background: var(--blue-soft); }
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      align-items: end;
+      height: 610px;
+      border-bottom: 2px solid var(--heavy);
+    }
+    .phase {
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,.66);
+      padding: 24px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+    .phase:nth-child(1) { height: 250px; }
+    .phase:nth-child(2) { height: 320px; }
+    .phase:nth-child(3) { height: 390px; }
+    .phase:nth-child(4) { height: 470px; border-color: rgba(140,75,63,.32); }
+    .phase:nth-child(5) { height: 560px; border-color: rgba(61,100,140,.38); }
+    .phase strong { font-size: 27px; line-height: 1.18; }
+    .phase span { color: var(--muted); font-size: 21px; line-height: 1.35; }
+
+    /* ===========================================
+       PRESENTATION CHROME
+       =========================================== */
+    .deck-controls {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid rgba(32,39,51,.18);
+      background: rgba(255,255,255,.88);
+      padding: 8px;
+      box-shadow: 0 10px 30px rgba(35,45,60,.10);
+    }
+    .nav-button, .edit-toggle {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--rule);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font: 700 20px/1 var(--font-mono);
+    }
+    .nav-button:hover, .edit-toggle:hover { background: var(--blue-soft); }
+    .counter {
+      min-width: 96px;
+      color: var(--muted);
+      text-align: center;
+      font: 700 15px/1 var(--font-mono);
+    }
+    .progress {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      background: rgba(32,39,51,.10);
+      z-index: 1000;
+    }
+    .progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: var(--blue);
+      transition: width .3s var(--ease-out-expo);
+    }
+    .help {
+      position: fixed;
+      left: 20px;
+      bottom: 24px;
+      color: rgba(32,39,51,.50);
+      z-index: 1000;
+      font: 700 13px/1 var(--font-mono);
+    }
+    .edit-hotzone {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 88px;
+      height: 88px;
+      z-index: 10000;
+    }
+    .edit-toggle {
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      z-index: 10001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease;
+    }
+    .edit-toggle.show, .edit-toggle.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.editing [data-editable] {
+      outline: 2px dashed var(--blue);
+      outline-offset: 4px;
+      cursor: text;
+    }
+  </style>
+</head>
+<body>
+  <div class="deck-viewport">
+    <main class="deck-stage" id="deckStage"></main>
+  </div>
+
+  <div class="help">ARROWS / SPACE 翻页 · E 编辑</div>
+  <div class="deck-controls" aria-label="幻灯片控制">
+    <button class="nav-button" id="prevBtn" type="button" title="上一页">‹</button>
+    <div class="counter" id="counter">01 / 18</div>
+    <button class="nav-button" id="nextBtn" type="button" title="下一页">›</button>
+  </div>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  <div class="edit-hotzone" id="editHotzone"></div>
+  <button class="edit-toggle" id="editToggle" type="button" title="编辑模式">E</button>
+
+  <script>
+    /* ===========================================
+       SLIDE DATA
+       =========================================== */
+    const slidesData = [
+      { type: "cover", reverse: true, folio: "01 / 封面", title: "面向 AI 应用集成的 MCP 与网关", lead: "能力接入，统一治理。从 AI 应用如何连接外部系统开始，讲清 MCP Server 的能力设计与 MCP Gateway 的治理边界。" },
+      { type: "agenda", folio: "02 / 目录", label: "讲述路径", title: "从接入问题走向治理体系", lead: "先讲 MCP 解决什么问题，再讲 Server 如何包装外部能力，最后讲 Gateway 如何统一治理。", items: ["AI 应用为什么需要 MCP", "MCP 的核心角色", "MCP Server 怎么设计能力", "MCP Gateway 管什么", "落地路径与常见问题"] },
+      { type: "split", folio: "03 / 背景", label: "背景", title: "AI 应用为什么需要连接外部世界", lead: "大模型只负责推理和生成，真实企业任务必须访问外部系统。", bullets: ["读项目文档", "查数据库", "调内部 API", "搜索知识库", "查看日志、指标、告警", "创建工单、发起审批"], quote: "企业 AI 应用的价值，往往来自“模型 + 企业上下文 + 外部动作”。" },
+      { type: "pain", reverse: true, folio: "04 / 痛点", label: "痛点", title: "点对点集成会失控", lead: "没有标准协议时，每个 AI 应用都要重复对接外部系统。", code: "Agent A -> 主数据 API / 知识库 API / 日志平台 API\nAgent B -> 主数据 API / 知识库 API / 日志平台 API\nAgent C -> ...", items: ["接入重复", "能力不可发现", "权限分散", "审计困难", "风险不可控", "描述、参数、错误格式不统一"] },
+      { type: "definition", folio: "05 / 定义", label: "定义", title: "MCP 是什么", quote: "MCP 把外部系统包装成 AI 应用可理解、可调用、可治理的标准能力。", items: ["有哪些能力可用？", "每个能力需要什么参数？", "哪些内容可以作为上下文？", "哪些动作可以由模型发起？", "调用结果如何返回？", "客户端和服务端如何协商能力？"] },
+      { type: "roles", folio: "06 / 角色", label: "角色", title: "Host、Client、Server、Gateway", lead: "先理解四个角色，再看协议细节。Gateway 不是协议必选项，但企业落地时很关键。", items: [["Host", "AI 应用本体，管理用户体验、模型调用、权限决策"], ["Client", "Host 创建的连接会话，负责和某个 Server 通信"], ["Server", "外部能力适配器，把业务系统包装成 MCP 能力"], ["Gateway", "企业级统一入口和治理层"]] },
+      { type: "design", reverse: true, folio: "07 / 设计", label: "能力设计", title: "MCP Server 不是把 API 原样透出", lead: "关键在于把业务系统能力设计成 AI 可理解、可调用、可治理的接口。", items: ["代表哪个业务域？", "暴露哪些能力给 AI？", "哪些只是读取上下文？", "哪些会产生副作用？", "哪些工具可以自动调用？", "哪些工具必须人工确认？", "哪些数据要脱敏？", "调用过程如何审计？"] },
+      { type: "triad", folio: "08 / 能力", label: "能力类型", title: "Tools / Resources / Prompts", lead: "MCP Server 暴露给 AI 应用的能力，主要分成三类。", items: [["Tools", "AI 能做什么", "查主数据、创建工单、跑查询"], ["Resources", "AI 能看什么", "文件、文档、日志、主数据记录"], ["Prompts", "经验如何模板化", "代码审查、故障分析、数据治理模板"]] },
+      { type: "sequence", folio: "09 / 调用链", label: "调用链", title: "从一次调用链理解 MCP", lead: "通过一次工具调用链，理解 MCP 如何把 AI 问答连接到真实业务系统。", prompt: "帮我查询这条主数据记录的状态，并给出处理建议。", steps: ["用户", "AI 应用", "模型判断需要查询工具", "MCP Client", "数据 MCP Server", "主数据平台"], tags: ["get_master_data", "get_field_rules"] },
+      { type: "call", folio: "10 / 示例", label: "调用示例", title: "让 AI 应用安全调用企业能力", lead: "主数据只是示例，重点是 MCP 如何让 AI 应用安全调用企业能力。", items: [["识别工具", "根据工具名称、参数和描述选择能力"], ["网关校验", "按用户、角色、租户和策略判断是否允许"], ["服务执行", "MCP Server 调用主数据平台并整理返回"], ["结果治理", "返回前统一脱敏、审计和观测"]] },
+      { type: "gateway", reverse: true, folio: "11 / 网关", label: "网关价值", title: "Server 解决怎么接，Gateway 解决怎么管", lead: "能力多了以后，直连模式会把权限、命名、审计和风险控制打散。", left: ["每个 Agent 配置很多 Server", "权限策略散落", "工具命名冲突", "审计困难", "高风险调用难以统一阻断"], right: ["统一入口", "统一工具目录", "统一权限", "统一策略", "统一审计", "统一路由与观测"] },
+      { type: "duties", folio: "12 / 职责", label: "核心职责", title: "MCP Gateway 是 AI 外部能力的治理入口", lead: "网关不一定做业务逻辑，重点做治理、路由、策略和可观测。", items: [["服务注册", "企业内部 MCP 能力目录"], ["工具目录", "AI 应用可用能力清单"], ["统一入口", "降低 Agent 接入复杂度"], ["权限控制", "防止越权调用"], ["策略治理", "高风险工具确认、阻断、脱敏"], ["路由转发", "转到后端 MCP Server"], ["审计日志", "调用可追溯"], ["可观测性", "统计延迟、失败率、调用量"]] },
+      { type: "compare", folio: "13 / 边界", label: "边界", title: "MCP Gateway 与 API Gateway、AI Gateway", lead: "三类网关关注点不同，不是互相替代。", rows: [["API Gateway", "业务 API 流量", "路由、鉴权、限流、熔断"], ["AI Gateway", "模型调用流量", "模型路由、成本、token、内容安全"], ["MCP Gateway", "工具和上下文能力", "工具治理、资源访问、MCP 会话、审计"]], code: "AI 应用 -> AI Gateway -> 模型服务\nAI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统" },
+      { type: "method", reverse: true, folio: "14 / 方法", label: "设计方法", title: "不要一上来问怎么写 Server", lead: "先问 AI 场景和能力边界，再决定能力类型、风险等级和网关策略。", items: [["01", "识别 AI 场景", "用户希望 AI 完成什么任务？"], ["02", "区分上下文和动作", "AI 需要看什么，做什么？"], ["03", "按风险给工具分级", "只读、敏感只读、低风险写、高风险动作"], ["04", "决定网关策略", "工具目录、权限、审计、审批、多租户"]] },
+      { type: "risk", folio: "15 / 风险", label: "落地风险", title: "风险来自“模型可以使用外部能力”", lead: "MCP 让 AI 能接触真实系统，也就要求 Host、Server、Gateway 共同守住边界。", risks: ["Prompt Injection", "资源越权读取", "工具组合风险", "影子 MCP Server"], controls: ["Host 和 Gateway 不能只相信模型判断", "Resource 读取绑定用户身份", "高风险工具必须确认或审批", "敏感数据脱敏", "MCP Server 注册审核和白名单"] },
+      { type: "roadmap", reverse: true, folio: "16 / 路线", label: "落地路线", title: "从只读开始，逐步引入写操作和网关治理", lead: "不建议一开始就开放高风险工具，先把可读上下文和低风险查询做稳。", items: [["阶段 1", "只读资源接入", "知识库、文档、FAQ、项目 README"], ["阶段 2", "低风险查询工具", "查主数据状态、查日志、查指标"], ["阶段 3", "受控写操作", "创建工单、生成报告、发起草稿"], ["阶段 4", "高风险动作治理", "合并、删除、发布、权限变更"], ["阶段 5", "Gateway 平台化", "服务注册、工具目录、鉴权、策略、审计和观测"]] },
+      { type: "summary", folio: "17 / 总结", label: "总结", title: "MCP 解决接入，Gateway 解决治理", lead: "把外部系统变成 AI 可理解的能力之后，还需要统一入口、权限、策略、审计和治理。", items: [["MCP", "AI 应用如何标准化连接外部能力"], ["MCP Server", "把业务系统包装成能力适配器"], ["Tools", "AI 能做什么"], ["Resources", "AI 能看什么"], ["Prompts", "团队经验如何模板化复用"], ["MCP Gateway", "能力多了以后如何统一治理"]], quote: "MCP 是 AI 应用接入外部世界的协议，MCP 网关是企业治理这些外部能力的入口。" },
+      { type: "qa", reverse: true, folio: "18 / 问答", label: "备选问题", title: "可以提前准备的几个问题", lead: "围绕协议边界、网关边界和服务规模，常见疑问可以收敛到这几类。", items: [["MCP 会替代 API 吗？", "不会，它是在 AI 应用和业务 API 之间增加面向模型的能力适配。"], ["已有 API Gateway 还需要 MCP Gateway 吗？", "两者管的对象不同，一个管 API 流量，一个管工具和上下文能力。"], ["模型能不能直接调业务 API？", "生产环境风险较高，权限、审计、参数校验会变得分散。"], ["MCP Server 越多越好吗？", "不是，应该按清晰能力域设计，避免治理成本失控。"]] }
+    ];
+
+    const moduleMeta = [
+      { id: 1, title: "AI 应用为什么需要 MCP", pages: "03-05", start: 2, end: 4 },
+      { id: 2, title: "MCP 的核心角色", pages: "06", start: 5, end: 5 },
+      { id: 3, title: "MCP Server 怎么设计能力", pages: "07-10", start: 6, end: 9 },
+      { id: 4, title: "MCP Gateway 管什么", pages: "11-13", start: 10, end: 12 },
+      { id: 5, title: "落地路径与常见问题", pages: "14-18", start: 13, end: 17 }
+    ];
+
+    function getModule(slideIndex) {
+      return moduleMeta.find((item) => slideIndex >= item.start && slideIndex <= item.end);
+    }
+
+    /* ===========================================
+       RENDER HELPERS
+       =========================================== */
+    const esc = (value) => String(value).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+    const edit = (value, tag = "span", cls = "") => `<${tag} class="${cls}" data-editable>${esc(value)}</${tag}>`;
+    const list = (items) => `<ul class="list">${items.map((item) => `<li data-editable>${esc(item)}</li>`).join("")}</ul>`;
+    const tile = ([title, body, note]) => `<div class="tile reveal"><strong data-editable>${esc(title)}</strong><span data-editable>${esc(body || "")}</span>${note ? `<div class="tag" style="margin-top:18px;width:max-content;">${esc(note)}</div>` : ""}</div>`;
+
+    /* ===========================================
+       SLIDE TEMPLATES
+       =========================================== */
+    const templates = {
+      cover: (s) => `<div class="frame title-frame">
+        <div>
+          <div class="label reveal">内部技术分享</div>
+          ${edit(s.title, "h1", "reveal")}
+          ${edit(s.lead, "p", "lead reveal",)}
+          <div class="ribbon reveal" style="margin-top:34px;"><span class="tag">能力接入</span><span class="tag">统一治理</span><span class="tag">审计可追溯</span></div>
+        </div>
+        <div class="cover-map reveal">
+          <div class="map-line l1"></div><div class="map-line l2"></div><div class="map-line l3"></div><div class="map-line l4"></div><div class="map-line l5"></div>
+          <div class="map-node agent">AI 应用</div><div class="map-node mcp redbox">MCP</div><div class="map-node gateway bluebox">网关</div>
+          <div class="map-node tools">工具</div><div class="map-node resources">资源</div><div class="map-node systems">外部系统</div>
+        </div>
+      </div>`,
+      agenda: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="five">${moduleMeta.map((item) => `<div class="tile agenda-item reveal"><div class="agenda-num">${String(item.id).padStart(2, "0")}</div><strong data-editable>${esc(item.title)}</strong><span>对应页：${esc(item.pages)}</span></div>`).join("")}</div></div>`,
+      split: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="quote reveal" data-editable style="margin-top:36px;">${esc(s.quote)}</div></div><div class="sheet reveal">${list(s.bullets)}</div></div>`,
+      pain: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><pre class="sheet mono reveal" style="font-size:24px;line-height:1.55;margin-top:32px;white-space:pre-wrap;">${esc(s.code)}</pre></div><div class="three">${s.items.map((item, i) => `<div class="tile reveal"><div class="agenda-num">${String(i + 1).padStart(2, "0")}</div><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
+      definition: (s) => `<div class="frame center-frame"><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<div class="quote reveal" data-editable>${esc(s.quote)}</div><div class="three">${s.items.map((item) => `<div class="tile reveal"><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
+      roles: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="flow reveal">${s.items.map((item) => `<div class="tile"><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div>`).join('<div class="arrow"></div>')}</div><div class="quote reveal" style="margin-top:36px;">用户 -> MCP Host / AI 应用 -> MCP Client -> MCP Server -> 外部系统</div></div></div>`,
+      design: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two">${s.items.map((item) => `<div class="tile reveal"><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
+      triad: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="three">${s.items.map(tile).join("")}</div></div>`,
+      sequence: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="quote reveal" data-editable>${esc(s.prompt)}</div><div class="flow reveal" style="margin-top:30px;grid-template-columns:repeat(6,1fr);">${s.steps.map((step) => `<div class="tile"><strong>${esc(step)}</strong></div>`).join("")}</div><div class="ribbon reveal" style="margin-top:26px;">${s.tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div></div></div>`,
+      call: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="four">${s.items.map((item, i) => `<div class="tile reveal"><div class="agenda-num">0${i + 1}</div><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div>`).join("")}</div></div>`,
+      gateway: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two reveal"><div class="sheet"><h3>直连模式问题</h3><div style="margin-top:24px;">${list(s.left)}</div></div><div class="sheet"><h3>网关模式价值</h3><div style="margin-top:24px;">${list(s.right)}</div></div></div></div>`,
+      duties: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="four">${s.items.map(tile).join("")}</div></div>`,
+      compare: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="table reveal"><div class="row head"><div>类型</div><div>管什么</div><div>典型问题</div></div>${s.rows.map((r) => `<div class="row"><div>${esc(r[0])}</div><div>${esc(r[1])}</div><div>${esc(r[2])}</div></div>`).join("")}</div><pre class="sheet mono reveal" style="font-size:23px;line-height:1.5;margin-top:24px;white-space:pre-wrap;">${esc(s.code)}</pre></div></div>`,
+      method: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="four">${s.items.map(([num, title, body]) => `<div class="tile reveal"><div class="agenda-num">${esc(num)}</div><strong>${esc(title)}</strong><span>${esc(body)}</span></div>`).join("")}</div></div>`,
+      risk: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="ribbon reveal" style="margin-top:30px;">${s.risks.map((risk) => `<span class="tag">${esc(risk)}</span>`).join("")}</div></div><div class="sheet reveal"><h3>控制建议</h3><div style="margin-top:24px;">${list(s.controls)}</div></div></div>`,
+      roadmap: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="timeline reveal">${s.items.map(([phase, title, body]) => `<div class="phase"><strong>${esc(phase)} · ${esc(title)}</strong><span>${esc(body)}</span></div>`).join("")}</div></div>`,
+      summary: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="three">${s.items.map(tile).join("")}</div><div class="quote reveal" data-editable style="margin-top:24px;">${esc(s.quote)}</div></div></div>`,
+      qa: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two">${s.items.map(tile).join("")}</div></div>`
+    };
+
+    /* ===========================================
+       SLIDE PRESENTATION CONTROLLER
+       =========================================== */
+    class SlidePresentation {
+      constructor() {
+        this.stage = document.getElementById("deckStage");
+        this.counter = document.getElementById("counter");
+        this.progressBar = document.getElementById("progressBar");
+        this.indexKey = "mcp-webppt-manual-current";
+        this.editKey = "mcp-webppt-manual-edits";
+        this.renderSlides();
+        this.slides = [...document.querySelectorAll(".slide")];
+        this.restoreEdits();
+        this.setupStageScale();
+        this.setupNavigation();
+        this.setupTouch();
+        this.setupWheel();
+        this.setupEditing();
+        const requested = Number.parseInt(new URLSearchParams(location.search).get("slide") || "", 10);
+        const stored = Number.parseInt(localStorage.getItem(this.indexKey) || "0", 10);
+        this.show(Number.isFinite(requested) ? requested - 1 : stored);
+      }
+
+      renderSlides() {
+        this.stage.innerHTML = slidesData.map((s, i) => {
+          const body = templates[s.type](s);
+          const module = getModule(i);
+          const moduleBar = module
+            ? `<div class="module-bar"><span class="module-index">模块 ${String(module.id).padStart(2, "0")}</span><span class="module-title">${esc(module.title)}</span><span class="module-pages">${esc(module.pages)}</span></div>`
+            : "";
+          const cls = `${s.reverse ? "slide reverse" : "slide"}${module ? ` module-${module.id}` : ""}`;
+          return `<section class="${cls}" data-folio="${esc(s.folio)}" aria-label="${i + 1}. ${esc(s.title)}">${moduleBar}${body}</section>`;
+        }).join("");
+      }
+
+      setupStageScale() {
+        const scale = () => {
+          const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+          const x = (window.innerWidth - 1920 * factor) / 2;
+          const y = (window.innerHeight - 1080 * factor) / 2;
+          this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+        };
+        scale();
+        window.addEventListener("resize", scale);
+      }
+
+      setupNavigation() {
+        document.getElementById("prevBtn").addEventListener("click", () => this.go(-1));
+        document.getElementById("nextBtn").addEventListener("click", () => this.go(1));
+        document.addEventListener("keydown", (event) => {
+          if (document.body.classList.contains("editing") && ["ArrowLeft", "ArrowRight", " "].includes(event.key)) return;
+          if (["ArrowRight", " ", "PageDown"].includes(event.key)) { event.preventDefault(); this.go(1); }
+          if (["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); this.go(-1); }
+          if (event.key === "Home") { event.preventDefault(); this.show(0); }
+          if (event.key === "End") { event.preventDefault(); this.show(this.slides.length - 1); }
+          if (event.key.toLowerCase() === "e" && !event.ctrlKey && !event.metaKey) { event.preventDefault(); this.toggleEdit(); }
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); this.saveEdits(true); }
+        });
+      }
+
+      setupTouch() {
+        let startX = 0, startY = 0;
+        window.addEventListener("touchstart", (event) => {
+          startX = event.changedTouches[0].clientX;
+          startY = event.changedTouches[0].clientY;
+        }, { passive: true });
+        window.addEventListener("touchend", (event) => {
+          const dx = event.changedTouches[0].clientX - startX;
+          const dy = event.changedTouches[0].clientY - startY;
+          if (Math.abs(dx) > 58 && Math.abs(dx) > Math.abs(dy)) this.go(dx < 0 ? 1 : -1);
+        }, { passive: true });
+      }
+
+      setupWheel() {
+        let locked = false;
+        window.addEventListener("wheel", (event) => {
+          if (locked || Math.abs(event.deltaY) < 30) return;
+          locked = true;
+          this.go(event.deltaY > 0 ? 1 : -1);
+          setTimeout(() => locked = false, 440);
+        }, { passive: true });
+      }
+
+      setupEditing() {
+        const hotzone = document.getElementById("editHotzone");
+        const toggle = document.getElementById("editToggle");
+        let hideTimer;
+        const show = () => { clearTimeout(hideTimer); toggle.classList.add("show"); };
+        const hide = () => {
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => {
+            if (!document.body.classList.contains("editing")) toggle.classList.remove("show");
+          }, 400);
+        };
+        hotzone.addEventListener("mouseenter", show);
+        hotzone.addEventListener("mouseleave", hide);
+        toggle.addEventListener("mouseenter", show);
+        toggle.addEventListener("mouseleave", hide);
+        toggle.addEventListener("click", () => this.toggleEdit());
+        this.stage.addEventListener("input", () => {
+          if (document.body.classList.contains("editing")) this.saveEdits(false);
+        });
+      }
+
+      toggleEdit() {
+        const active = !document.body.classList.contains("editing");
+        document.body.classList.toggle("editing", active);
+        document.getElementById("editToggle").classList.toggle("active", active);
+        document.querySelectorAll("[data-editable]").forEach((el) => {
+          el.contentEditable = active ? "true" : "false";
+        });
+        if (!active) this.saveEdits(true);
+      }
+
+      saveEdits(signal) {
+        const edits = [...document.querySelectorAll("[data-editable]")].map((el) => el.innerHTML);
+        localStorage.setItem(this.editKey, JSON.stringify(edits));
+        if (signal) {
+          const old = this.counter.textContent;
+          this.counter.textContent = "SAVED";
+          setTimeout(() => this.updateChrome(), 720);
+        }
+      }
+
+      restoreEdits() {
+        try {
+          const edits = JSON.parse(localStorage.getItem(this.editKey) || "[]");
+          document.querySelectorAll("[data-editable]").forEach((el, i) => {
+            if (edits[i]) el.innerHTML = edits[i];
+          });
+        } catch (_) {}
+      }
+
+      show(index) {
+        this.current = Math.max(0, Math.min(index, this.slides.length - 1));
+        this.slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === this.current);
+          slide.classList.toggle("visible", i === this.current);
+        });
+        localStorage.setItem(this.indexKey, String(this.current));
+        this.updateChrome();
+      }
+
+      updateChrome() {
+        this.counter.textContent = `${String(this.current + 1).padStart(2, "0")} / ${String(this.slides.length).padStart(2, "0")}`;
+        this.progressBar.style.width = `${((this.current + 1) / this.slides.length) * 100}%`;
+      }
+
+      go(delta) { this.show(this.current + delta); }
+    }
+
+    new SlidePresentation();
+  </script>
+</body>
+</html>
