@@ -558,6 +558,125 @@
     }
     .reverse .arrow { background: linear-gradient(90deg, var(--module-color, var(--cyan)), var(--heavy)); }
     .reverse .arrow::after { border-left-color: var(--module-color, var(--cyan)); }
+    .roles-layout {
+      display: grid;
+      grid-template-columns: 1.08fr .72fr;
+      gap: 34px;
+      align-items: stretch;
+    }
+    .roles-diagram {
+      position: relative;
+      min-height: 610px;
+      border: 1px solid var(--rule);
+      background:
+        linear-gradient(90deg, rgba(40,166,183,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(40,166,183,.06) 1px, transparent 1px),
+        rgba(252,255,247,.82);
+      background-size: 44px 44px, 44px 44px, auto;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+    .roles-diagram::before {
+      content: "";
+      position: absolute;
+      inset: 42px;
+      border: 1px solid rgba(23,32,42,.08);
+      pointer-events: none;
+    }
+    .role-node {
+      position: absolute;
+      z-index: 3;
+      min-width: 106px;
+      padding: 14px 13px;
+      border: 1.5px solid rgba(31,111,139,.74);
+      background: rgba(252,255,247,.96);
+      box-shadow: 0 15px 30px rgba(23,32,42,.12);
+      text-align: center;
+      color: var(--ink);
+    }
+    .role-node strong {
+      display: block;
+      font: 800 18px/1.16 var(--font-body);
+    }
+    .role-node span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font: 600 14px/1.22 var(--font-body);
+    }
+    .role-node.host {
+      min-width: 146px;
+      border-color: rgba(198,84,61,.76);
+      background: #fff1ea;
+    }
+    .role-node.client {
+      min-width: 138px;
+      border-color: rgba(40,166,183,.82);
+      background: #e9fbff;
+    }
+    .role-node.server {
+      min-width: 148px;
+      border-color: rgba(180,135,46,.82);
+      background: #fff6df;
+    }
+    .role-node.system {
+      min-width: 162px;
+    }
+    .role-user { left: 54px; top: 284px; }
+    .role-host { left: 204px; top: 258px; }
+    .role-model { left: 500px; top: 140px; }
+    .role-client { left: 462px; top: 416px; }
+    .role-server { left: 636px; top: 416px; }
+    .role-system { left: 820px; top: 416px; }
+    .role-edge {
+      position: absolute;
+      z-index: 2;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(31,111,139,.72), rgba(40,166,183,.90));
+      transform-origin: left center;
+      box-shadow: 0 0 10px rgba(40,166,183,.18);
+    }
+    .role-edge::after {
+      content: "";
+      position: absolute;
+      right: -2px;
+      top: -6px;
+      border-left: 12px solid rgba(31,111,139,.88);
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+    }
+    .role-edge.bidirectional::before {
+      content: "";
+      position: absolute;
+      left: -2px;
+      top: -6px;
+      border-right: 12px solid rgba(31,111,139,.88);
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+    }
+    .role-edge.e-user-host { left: 160px; top: 310px; width: 48px; }
+    .role-edge.e-host-model { left: 350px; top: 272px; width: 172px; transform: rotate(-25deg); }
+    .role-edge.e-host-client { left: 350px; top: 356px; width: 144px; transform: rotate(39deg); }
+    .role-edge.e-client-server { left: 600px; top: 454px; width: 40px; }
+    .role-edge.e-server-system { left: 786px; top: 454px; width: 38px; transform: none; }
+    .roles-cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .roles-cards .tile {
+      min-height: 196px;
+      display: grid;
+      align-content: start;
+    }
+    .roles-cards .tile strong {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+    .roles-cards .tile span {
+      font-size: 23px;
+      line-height: 1.42;
+    }
     .sequence-diagram {
       --sequence-blue: #1f6f8b;
       position: relative;
@@ -856,8 +975,8 @@
       { type: "agenda", folio: "02 / 目录", label: "目录", items: ["AI 应用为什么需要 MCP", "MCP 的核心角色", "MCP Server 怎么设计能力", "MCP Gateway 管什么", "落地路径与常见问题"] },
       { type: "split", folio: "03 / 背景", label: "背景", title: "AI 应用为什么需要连接外部世界", lead: "大模型只负责推理和生成，真实企业任务必须访问外部系统。", bullets: ["读项目文档", "查数据库", "调内部 API", "搜索知识库", "查看日志、指标、告警", "创建工单、发起审批"], quote: "企业 AI 应用的价值，往往来自“模型 + 企业上下文 + 外部动作”。" },
       { type: "pain", reverse: true, folio: "04 / 痛点", label: "痛点", title: "点对点集成会失控", lead: "没有标准协议时，每个 AI 应用都要重复对接外部系统。", code: "Agent A -> 主数据 API / 知识库 API / 日志平台 API\nAgent B -> 主数据 API / 知识库 API / 日志平台 API\nAgent C -> ...", items: ["接入重复", "能力不可发现", "权限分散", "审计困难", "风险不可控", "描述、参数、错误格式不统一"] },
-      { type: "definition", folio: "05 / 定义", label: "定义", title: "MCP 是什么", quote: "MCP 把外部系统包装成 AI 应用可理解、可调用、可治理的标准能力。", items: ["有哪些能力可用？", "每个能力需要什么参数？", "哪些内容可以作为上下文？", "哪些动作可以由模型发起？", "调用结果如何返回？", "客户端和服务端如何协商能力？"] },
-      { type: "roles", folio: "06 / 角色", label: "角色", title: "Host、Client、Server、Gateway", lead: "先理解四个角色，再看协议细节。Gateway 不是协议必选项，但企业落地时很关键。", items: [["Host", "AI 应用本体，管理用户体验、模型调用、权限决策"], ["Client", "Host 创建的连接会话，负责和某个 Server 通信"], ["Server", "外部能力适配器，把业务系统包装成 MCP 能力"], ["Gateway", "企业级统一入口和治理层"]] },
+      { type: "definition", folio: "05 / 定义", label: "定义", title: "MCP 是什么", quote: "MCP（Model Context Protocol，模型上下文协议）把外部系统包装成 AI 应用可理解、可调用、可治理的标准能力。", items: ["有哪些能力可用？", "每个能力需要什么参数？", "哪些内容可以作为上下文？", "哪些动作可以由模型发起？", "调用结果如何返回？", "客户端和服务端如何协商能力？"] },
+      { type: "roles", folio: "06 / 角色", label: "核心角色", title: "Host、Client、Server 是 MCP 的三段分工", lead: "先理解协议内的三个核心角色，再看 MCP 如何把模型和外部能力标准化连接起来。", items: [["Host", "AI 应用本体，管理用户体验、模型调用、权限决策和上下文组织"], ["Client", "Host 创建的连接会话，一条 Client 通常连接一个 MCP Server，负责协议通信"], ["Server", "外部能力适配器，把 API、数据库、文档或工具包装成 MCP 标准能力"]] },
       { type: "design", reverse: true, folio: "07 / 设计", label: "能力设计", title: "MCP Server 不是把 API 原样透出", lead: "关键在于把业务系统能力设计成 AI 可理解、可调用、可治理的接口。", items: ["代表哪个业务域？", "暴露哪些能力给 AI？", "哪些只是读取上下文？", "哪些会产生副作用？", "哪些工具可以自动调用？", "哪些工具必须人工确认？", "哪些数据要脱敏？", "调用过程如何审计？"] },
       { type: "triad", folio: "08 / 能力", label: "能力类型", title: "Tools / Resources / Prompts", lead: "MCP Server 暴露给 AI 应用的能力，主要分成三类。", items: [["Tools", "AI 能做什么", "查主数据、创建工单、跑查询"], ["Resources", "AI 能看什么", "文件、文档、日志、主数据记录"], ["Prompts", "经验如何模板化", "代码审查、故障分析、数据治理模板"]] },
       { type: "sequence", folio: "09 / 调用链", label: "调用链", title: "从一次调用链理解 MCP", participants: ["用户", "AI 应用", "大模型", "MCP Client", "主数据 MCP Server", "普元 MDM 平台"], messages: [
@@ -925,7 +1044,19 @@
       split: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="quote reveal" data-editable style="margin-top:36px;">${esc(s.quote)}</div></div><div class="sheet reveal">${list(s.bullets)}</div></div>`,
       pain: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><pre class="sheet mono reveal" style="font-size:24px;line-height:1.55;margin-top:32px;white-space:pre-wrap;">${esc(s.code)}</pre></div><div class="three">${s.items.map((item, i) => `<div class="tile reveal"><div class="agenda-num">${String(i + 1).padStart(2, "0")}</div><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
       definition: (s) => `<div class="frame center-frame"><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<div class="quote reveal" data-editable>${esc(s.quote)}</div><div class="three">${s.items.map((item) => `<div class="tile reveal"><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
-      roles: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="flow role-flow reveal">${s.items.map((item) => `<div class="tile"><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div>`).join('<div class="arrow"></div>')}</div><div class="quote reveal" style="margin-top:36px;">用户 -> MCP Host / AI 应用 -> MCP Client -> MCP Server -> 外部系统</div></div></div>`,
+      roles: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="roles-layout"><div class="roles-diagram reveal">
+          <div class="role-node role-user"><strong>用户</strong></div>
+          <div class="role-node host role-host"><strong>MCP Host</strong><span>AI 应用</span></div>
+          <div class="role-node role-model"><strong>大模型</strong></div>
+          <div class="role-node client role-client"><strong>MCP Client</strong><span>连接会话</span></div>
+          <div class="role-node server role-server"><strong>MCP Server</strong><span>能力适配器</span></div>
+          <div class="role-node system role-system"><strong>外部系统</strong><span>API / DB / Docs / Tools</span></div>
+          <div class="role-edge e-user-host"></div>
+          <div class="role-edge e-host-model"></div>
+          <div class="role-edge e-host-client"></div>
+          <div class="role-edge bidirectional e-client-server"></div>
+          <div class="role-edge e-server-system"></div>
+        </div><div class="roles-cards reveal">${s.items.map((item) => `<div class="tile"><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div>`).join("")}</div></div></div>`,
       design: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two">${s.items.map((item) => `<div class="tile reveal"><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
       triad: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="three">${s.items.map(tile).join("")}</div></div>`,
       sequence: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}</header><div class="sheet sequence-diagram reveal"><div class="mermaid-sequence">${s.participants.map((name, i) => `<div class="seq-participant top seq-col-${i + 1}">${esc(name)}</div><div class="seq-participant bottom seq-col-${i + 1}">${esc(name)}</div><div class="seq-lifeline seq-col-${i + 1}"></div>`).join("")}${s.messages.map((m) => `<div class="seq-message ${esc(m.cls)}" style="top:${Number(m.top)}px;"><div class="seq-line"></div><div class="seq-text">${esc(m.text)}</div></div>`).join("")}<div class="seq-self seq-col-${s.selfCall.col}" style="top:${Number(s.selfCall.top)}px;"></div><div class="seq-self-label seq-col-${s.selfCall.col}" style="top:${Number(s.selfCall.top) - 24}px;">${esc(s.selfCall.text)}</div></div></div></div>`,
