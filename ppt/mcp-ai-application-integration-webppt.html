@@ -330,11 +330,13 @@
       transform: translateY(0);
     }
 
-    .reveal:nth-child(1) { transition-delay: .06s; }
-    .reveal:nth-child(2) { transition-delay: .14s; }
-    .reveal:nth-child(3) { transition-delay: .22s; }
-    .reveal:nth-child(4) { transition-delay: .30s; }
-    .reveal:nth-child(5) { transition-delay: .38s; }
+    .reveal:nth-child(1),
+    .reveal:nth-child(2),
+    .reveal:nth-child(3),
+    .reveal:nth-child(4),
+    .reveal:nth-child(5) {
+      transition-delay: 0s;
+    }
 
     /* ===========================================
        LAYOUT SYSTEM
@@ -623,8 +625,8 @@
       min-width: 162px;
     }
     .role-user { left: 54px; top: 284px; }
-    .role-host { left: 204px; top: 258px; }
-    .role-model { left: 500px; top: 140px; }
+    .role-host { left: 210px; top: 270px; }
+    .role-model { left: 462px; top: 145px; }
     .role-client { left: 462px; top: 416px; }
     .role-server { left: 636px; top: 416px; }
     .role-system { left: 820px; top: 416px; }
@@ -655,8 +657,8 @@
       border-bottom: 7px solid transparent;
     }
     .role-edge.e-user-host { left: 160px; top: 310px; width: 48px; }
-    .role-edge.e-host-model { left: 350px; top: 272px; width: 172px; transform: rotate(-25deg); }
-    .role-edge.e-host-client { left: 350px; top: 356px; width: 144px; transform: rotate(39deg); }
+    .role-edge.e-host-model { left: 350px; top: 276px; width: 140px; transform: rotate(-39deg); }
+    .role-edge.e-host-client { left: 350px; top: 334px; width: 140px; transform: rotate(39deg); }
     .role-edge.e-client-server { left: 600px; top: 454px; width: 40px; }
     .role-edge.e-server-system { left: 786px; top: 454px; width: 38px; transform: none; }
     .roles-cards {
@@ -959,7 +961,7 @@
   <div class="help">ARROWS / SPACE 翻页 · E 编辑</div>
   <div class="deck-controls" aria-label="幻灯片控制">
     <button class="nav-button" id="prevBtn" type="button" title="上一页">‹</button>
-    <div class="counter" id="counter">01 / 19</div>
+    <div class="counter" id="counter">01 / 18</div>
     <button class="nav-button" id="nextBtn" type="button" title="下一页">›</button>
   </div>
   <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
@@ -972,7 +974,7 @@
        =========================================== */
     const slidesData = [
       { type: "cover", reverse: true, folio: "01 / 封面", title: "MCP服务与MCP网关技术分享", speaker: "分享人：刘题丰" },
-      { type: "agenda", folio: "02 / 目录", label: "目录", items: ["AI 应用为什么需要 MCP", "MCP 的核心角色", "MCP Server 怎么设计能力", "MCP Gateway 管什么", "落地路径与常见问题"] },
+      { type: "agenda", folio: "02 / 目录", label: "目录", items: ["背景", "MCP 的核心角色", "MCP Server 怎么设计能力", "MCP Gateway 管什么", "落地路径与风险治理"] },
       { type: "split", folio: "03 / 背景", label: "背景", title: "AI 应用为什么需要连接外部世界", lead: "大模型只负责推理和生成，真实企业任务必须访问外部系统。", bullets: ["读项目文档", "查数据库", "调内部 API", "搜索知识库", "查看日志、指标、告警", "创建工单、发起审批"], quote: "企业 AI 应用的价值，往往来自“模型 + 企业上下文 + 外部动作”。" },
       { type: "pain", reverse: true, folio: "04 / 痛点", label: "痛点", title: "点对点集成会失控", lead: "没有标准协议时，每个 AI 应用都要重复对接外部系统。", code: "Agent A -> 主数据 API / 知识库 API / 日志平台 API\nAgent B -> 主数据 API / 知识库 API / 日志平台 API\nAgent C -> ...", items: ["接入重复", "能力不可发现", "权限分散", "审计困难", "风险不可控", "描述、参数、错误格式不统一"] },
       { type: "definition", folio: "05 / 定义", label: "定义", title: "MCP 是什么", quote: "MCP（Model Context Protocol，模型上下文协议）把外部系统包装成 AI 应用可理解、可调用、可治理的标准能力。", items: ["有哪些能力可用？", "每个能力需要什么参数？", "哪些内容可以作为上下文？", "哪些动作可以由模型发起？", "调用结果如何返回？", "客户端和服务端如何协商能力？"] },
@@ -1001,16 +1003,15 @@
       { type: "method", reverse: true, folio: "15 / 方法", label: "设计方法", title: "不要一上来问怎么写 Server", lead: "先问 AI 场景和能力边界，再决定能力类型、风险等级和网关策略。", items: [["01", "识别 AI 场景", "用户希望 AI 完成什么任务？"], ["02", "区分上下文和动作", "AI 需要看什么，做什么？"], ["03", "按风险给工具分级", "只读、敏感只读、低风险写、高风险动作"], ["04", "决定网关策略", "工具目录、权限、审计、审批、多租户"]] },
       { type: "risk", folio: "16 / 风险", label: "落地风险", title: "风险来自“模型可以使用外部能力”", lead: "MCP 让 AI 能接触真实系统，也就要求 Host、Server、Gateway 共同守住边界。", risks: ["Prompt Injection", "资源越权读取", "工具组合风险", "影子 MCP Server"], controls: ["Host 和 Gateway 不能只相信模型判断", "Resource 读取绑定用户身份", "高风险工具必须确认或审批", "敏感数据脱敏", "MCP Server 注册审核和白名单"] },
       { type: "roadmap", reverse: true, folio: "17 / 路线", label: "落地路线", title: "从只读开始，逐步引入写操作和网关治理", lead: "不建议一开始就开放高风险工具，先把可读上下文和低风险查询做稳。", items: [["阶段 1", "只读资源接入", "知识库、文档、FAQ、项目 README"], ["阶段 2", "低风险查询工具", "查主数据状态、查日志、查指标"], ["阶段 3", "受控写操作", "创建工单、生成报告、发起草稿"], ["阶段 4", "高风险动作治理", "合并、删除、发布、权限变更"], ["阶段 5", "Gateway 平台化", "服务注册、工具目录、鉴权、策略、审计和观测"]] },
-      { type: "summary", folio: "18 / 总结", label: "总结", title: "MCP 解决接入，Gateway 解决治理", lead: "把外部系统变成 AI 可理解的能力之后，还需要统一入口、权限、策略、审计和治理。", items: [["MCP", "AI 应用如何标准化连接外部能力"], ["MCP Server", "把业务系统包装成能力适配器"], ["Tools", "AI 能做什么"], ["Resources", "AI 能看什么"], ["Prompts", "团队经验如何模板化复用"], ["MCP Gateway", "能力多了以后如何统一治理"]], quote: "MCP 是 AI 应用接入外部世界的协议，MCP 网关是企业治理这些外部能力的入口。" },
-      { type: "qa", reverse: true, folio: "19 / 问答", label: "备选问题", title: "可以提前准备的几个问题", lead: "围绕协议边界、网关边界和服务规模，常见疑问可以收敛到这几类。", items: [["MCP 会替代 API 吗？", "不会，它是在 AI 应用和业务 API 之间增加面向模型的能力适配。"], ["已有 API Gateway 还需要 MCP Gateway 吗？", "两者管的对象不同，一个管 API 流量，一个管工具和上下文能力。"], ["模型能不能直接调业务 API？", "生产环境风险较高，权限、审计、参数校验会变得分散。"], ["MCP Server 越多越好吗？", "不是，应该按清晰能力域设计，避免治理成本失控。"]] }
+      { type: "summary", folio: "18 / 总结", label: "总结", title: "MCP 解决接入，Gateway 解决治理", lead: "把外部系统变成 AI 可理解的能力之后，还需要统一入口、权限、策略、审计和治理。", items: [["MCP", "AI 应用如何标准化连接外部能力"], ["MCP Server", "把业务系统包装成能力适配器"], ["Tools", "AI 能做什么"], ["Resources", "AI 能看什么"], ["Prompts", "团队经验如何模板化复用"], ["MCP Gateway", "能力多了以后如何统一治理"]], quote: "MCP 是 AI 应用接入外部世界的协议，MCP 网关是企业治理这些外部能力的入口。" }
     ];
 
     const moduleMeta = [
-      { id: 1, title: "AI 应用为什么需要 MCP", pages: "03-05", start: 2, end: 4 },
+      { id: 1, title: "背景", pages: "03-05", start: 2, end: 4 },
       { id: 2, title: "MCP 的核心角色", pages: "06", start: 5, end: 5 },
       { id: 3, title: "MCP Server 怎么设计能力", pages: "07-10", start: 6, end: 9 },
       { id: 4, title: "MCP Gateway 管什么", pages: "11-14", start: 10, end: 13 },
-      { id: 5, title: "落地路径与常见问题", pages: "15-19", start: 14, end: 18 }
+      { id: 5, title: "落地路径与风险治理", pages: "15-18", start: 14, end: 17 }
     ];
 
     function getModule(slideIndex) {
