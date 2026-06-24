@@ -1,0 +1,9 @@
+第2页
+目录调整
+第二章节改为MCP及其核心角色，并将第五页与第六页都放在第二章节中
+第三章节改为MCP Server
+第四章节改为MCP Gateway
+
+
+为什么需要MCP Gateway
+MCP Gateway 核心职责
