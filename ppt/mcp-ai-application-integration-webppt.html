@@ -117,16 +117,7 @@
         max-height: 100%;
     }
 
-    /* 6. Presentation chrome stays outside the slide design system */
-    .deck-controls {
-        position: fixed;
-        left: 50%;
-        bottom: 22px;
-        transform: translateX(-50%);
-        z-index: 1000;
-    }
-
-    /* 7. Print one fixed-size slide per page */
+    /* 6. Print one fixed-size slide per page */
     @media print {
         html,
         body {
@@ -167,12 +158,9 @@
             page-break-after: auto;
         }
 
-        .deck-controls {
-            display: none !important;
-        }
     }
 
-    /* 8. Reduced motion */
+    /* 7. Reduced motion */
     @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
@@ -477,37 +465,65 @@
       background-size: auto, auto, 52px 52px, 52px 52px, auto;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 26px 70px rgba(0,0,0,.24);
     }
+    .cover-map::before {
+      content: "";
+      position: absolute;
+      left: 86px;
+      right: 86px;
+      top: 332px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--module-color, var(--blue)) 24%, transparent), transparent);
+    }
+    .map-links {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .map-path {
+      fill: none;
+      stroke: color-mix(in srgb, var(--module-color, var(--blue)) 64%, rgba(40,166,183,.58));
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 7px rgba(40,166,183,.18));
+    }
+    .map-path.branch {
+      stroke-width: 3;
+      stroke: color-mix(in srgb, var(--module-color, var(--blue)) 52%, rgba(180,135,46,.55));
+    }
+    .map-bus-dot {
+      fill: color-mix(in srgb, var(--module-color, var(--blue)) 78%, #ffffff);
+      stroke: rgba(252,255,247,.96);
+      stroke-width: 4;
+    }
     .map-node {
       position: absolute;
       border: 1px solid var(--rule);
       background: rgba(246,243,236,.92);
-      padding: 20px 18px;
-      font: 700 23px/1.1 var(--font-body);
-      min-width: 144px;
+      padding: 18px 18px;
+      font: 700 24px/1.1 var(--font-body);
+      min-width: 146px;
       text-align: center;
       color: #17202a;
       box-shadow: 0 15px 30px rgba(0,0,0,.18);
     }
     .map-node.redbox { border-color: rgba(198,84,61,.54); color: #17202a; background: #ffe9df; }
     .map-node.bluebox { border-color: rgba(40,166,183,.54); color: #17202a; background: #e5fbff; }
-    .map-line {
-      position: absolute;
-      height: 3px;
-      background: linear-gradient(90deg, rgba(40,166,183,.88), rgba(180,135,46,.72));
-      transform-origin: left center;
-      box-shadow: 0 0 16px rgba(40,166,183,.36);
+    .map-node.small {
+      min-width: 126px;
+      padding: 16px 18px;
+      background: rgba(252,255,247,.92);
+      box-shadow: 0 12px 26px rgba(0,0,0,.14);
     }
-    .agent { left: 54px; top: 318px; }
-    .mcp { left: 226px; top: 318px; }
-    .gateway { left: 398px; top: 318px; }
-    .tools { right: 44px; top: 128px; }
-    .resources { right: 44px; top: 318px; }
-    .systems { right: 44px; top: 508px; }
-    .l1 { left: 198px; top: 352px; width: 32px; }
-    .l2 { left: 370px; top: 352px; width: 32px; }
-    .l3 { left: 542px; top: 352px; width: 95px; transform: rotate(-56deg); }
-    .l4 { left: 542px; top: 352px; width: 78px; }
-    .l5 { left: 542px; top: 352px; width: 96px; transform: rotate(56deg); }
+    .agent { left: 70px; top: 310px; }
+    .mcp { left: 258px; top: 310px; }
+    .gateway { left: 448px; top: 310px; }
+    .tools { right: 84px; top: 168px; }
+    .resources { right: 84px; top: 310px; }
+    .systems { right: 84px; top: 452px; }
     .agenda-item {
       min-height: 440px;
       display: grid;
@@ -519,8 +535,12 @@
     }
     .agenda-item span {
       color: var(--muted);
-      font-size: 22px;
-      line-height: 1.35;
+      font-size: 21px;
+      line-height: 1.42;
+    }
+    .agenda-item strong {
+      font-size: 28px;
+      line-height: 1.22;
     }
     .agenda-num {
       font: 700 64px/1 var(--font-mono);
@@ -873,84 +893,6 @@
     .phase strong { font-size: 27px; line-height: 1.18; }
     .phase span { color: var(--muted); font-size: 21px; line-height: 1.35; }
 
-    /* ===========================================
-       PRESENTATION CHROME
-       =========================================== */
-    .deck-controls {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      border: 1px solid rgba(32,39,51,.18);
-      background: rgba(244,247,241,.94);
-      padding: 8px;
-      box-shadow: 0 14px 40px rgba(0,0,0,.22);
-    }
-    .nav-button, .edit-toggle {
-      width: 44px;
-      height: 44px;
-      border: 1px solid var(--rule);
-      background: #fcfff7;
-      color: var(--ink);
-      cursor: pointer;
-      font: 700 20px/1 var(--font-mono);
-    }
-    .nav-button:hover, .edit-toggle:hover { background: var(--blue-soft); }
-    .counter {
-      min-width: 96px;
-      color: var(--muted);
-      text-align: center;
-      font: 700 15px/1 var(--font-mono);
-    }
-    .progress {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 4px;
-      background: rgba(32,39,51,.10);
-      z-index: 1000;
-    }
-    .progress span {
-      display: block;
-      width: 0;
-      height: 100%;
-      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--gold));
-      transition: width .3s var(--ease-out-expo);
-    }
-    .help {
-      position: fixed;
-      left: 20px;
-      bottom: 24px;
-      color: rgba(32,39,51,.50);
-      z-index: 1000;
-      font: 700 13px/1 var(--font-mono);
-    }
-    .edit-hotzone {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 88px;
-      height: 88px;
-      z-index: 10000;
-    }
-    .edit-toggle {
-      position: fixed;
-      left: 20px;
-      top: 20px;
-      z-index: 10001;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .22s ease;
-    }
-    .edit-toggle.show, .edit-toggle.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    body.editing [data-editable] {
-      outline: 2px dashed var(--blue);
-      outline-offset: 4px;
-      cursor: text;
-    }
   </style>
 </head>
 <body>
@@ -958,23 +900,13 @@
     <main class="deck-stage" id="deckStage"></main>
   </div>
 
-  <div class="help">ARROWS / SPACE 翻页 · E 编辑</div>
-  <div class="deck-controls" aria-label="幻灯片控制">
-    <button class="nav-button" id="prevBtn" type="button" title="上一页">‹</button>
-    <div class="counter" id="counter">01 / 18</div>
-    <button class="nav-button" id="nextBtn" type="button" title="下一页">›</button>
-  </div>
-  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
-  <div class="edit-hotzone" id="editHotzone"></div>
-  <button class="edit-toggle" id="editToggle" type="button" title="编辑模式">E</button>
-
   <script>
     /* ===========================================
        SLIDE DATA
        =========================================== */
     const slidesData = [
       { type: "cover", reverse: true, folio: "01 / 封面", title: "MCP服务与MCP网关技术分享", speaker: "分享人：刘题丰" },
-      { type: "agenda", folio: "02 / 目录", label: "目录", items: ["背景", "MCP 的核心角色", "MCP Server 怎么设计能力", "MCP Gateway 管什么", "落地路径与风险治理"] },
+      { type: "agenda", folio: "02 / 目录", label: "目录", items: [["背景", "AI 应用为什么需要 MCP"], ["MCP 及其核心角色", "谁在连接外部能力"], ["MCP Server", "如何把系统封装成 AI 能力"], ["MCP Gateway", "如何统一入口、权限与治理"], ["落地路径与风险治理", "从可用到可控"]] },
       { type: "split", folio: "03 / 背景", label: "背景", title: "AI 应用为什么需要连接外部世界", lead: "大模型只负责推理和生成，真实企业任务必须访问外部系统。", bullets: ["读项目文档", "查数据库", "调内部 API", "搜索知识库", "查看日志、指标、告警", "创建工单、发起审批"], quote: "企业 AI 应用的价值，往往来自“模型 + 企业上下文 + 外部动作”。" },
       { type: "pain", reverse: true, folio: "04 / 痛点", label: "痛点", title: "点对点集成会失控", lead: "没有标准协议时，每个 AI 应用都要重复对接外部系统。", code: "Agent A -> 主数据 API / 知识库 API / 日志平台 API\nAgent B -> 主数据 API / 知识库 API / 日志平台 API\nAgent C -> ...", items: ["接入重复", "能力不可发现", "权限分散", "审计困难", "风险不可控", "描述、参数、错误格式不统一"] },
       { type: "definition", folio: "05 / 定义", label: "定义", title: "MCP 是什么", quote: "MCP（Model Context Protocol，模型上下文协议）把外部系统包装成 AI 应用可理解、可调用、可治理的标准能力。", items: ["有哪些能力可用？", "每个能力需要什么参数？", "哪些内容可以作为上下文？", "哪些动作可以由模型发起？", "调用结果如何返回？", "客户端和服务端如何协商能力？"] },
@@ -1007,11 +939,11 @@
     ];
 
     const moduleMeta = [
-      { id: 1, title: "背景", pages: "03-05", start: 2, end: 4 },
-      { id: 2, title: "MCP 的核心角色", pages: "06", start: 5, end: 5 },
-      { id: 3, title: "MCP Server 怎么设计能力", pages: "07-10", start: 6, end: 9 },
-      { id: 4, title: "MCP Gateway 管什么", pages: "11-14", start: 10, end: 13 },
-      { id: 5, title: "落地路径与风险治理", pages: "15-18", start: 14, end: 17 }
+      { id: 1, title: "背景", desc: "AI 应用为什么需要 MCP", pages: "03-04", start: 2, end: 3 },
+      { id: 2, title: "MCP 及其核心角色", desc: "谁在连接外部能力", pages: "05-06", start: 4, end: 5 },
+      { id: 3, title: "MCP Server", desc: "如何把系统封装成 AI 能力", pages: "07-10", start: 6, end: 9 },
+      { id: 4, title: "MCP Gateway", desc: "如何统一入口、权限与治理", pages: "11-14", start: 10, end: 13 },
+      { id: 5, title: "落地路径与风险治理", desc: "从可用到可控", pages: "15-18", start: 14, end: 17 }
     ];
 
     function getModule(slideIndex) {
@@ -1026,9 +958,16 @@
     const list = (items) => `<ul class="list">${items.map((item) => `<li data-editable>${esc(item)}</li>`).join("")}</ul>`;
     const tile = ([title, body, note]) => `<div class="tile reveal"><strong data-editable>${esc(title)}</strong><span data-editable>${esc(body || "")}</span>${note ? `<div class="tag" style="margin-top:18px;width:max-content;">${esc(note)}</div>` : ""}</div>`;
     const mapDiagram = () => `<div class="cover-map reveal">
-          <div class="map-line l1"></div><div class="map-line l2"></div><div class="map-line l3"></div><div class="map-line l4"></div><div class="map-line l5"></div>
+          <svg class="map-links" viewBox="0 0 928 700" preserveAspectRatio="none" aria-hidden="true">
+            <path class="map-path" d="M 216 342 H 258" />
+            <path class="map-path" d="M 404 342 H 448" />
+            <path class="map-path" d="M 594 342 H 674 V 200 H 786" />
+            <path class="map-path branch" d="M 674 342 H 786" />
+            <path class="map-path branch" d="M 674 342 V 484 H 786" />
+            <circle class="map-bus-dot" cx="674" cy="342" r="7" />
+          </svg>
           <div class="map-node agent">AI 应用</div><div class="map-node mcp redbox">MCP</div><div class="map-node gateway bluebox">网关</div>
-          <div class="map-node tools">工具</div><div class="map-node resources">资源</div><div class="map-node systems">外部系统</div>
+          <div class="map-node small tools">工具</div><div class="map-node small resources">资源</div><div class="map-node small systems">外部系统</div>
         </div>`;
 
     /* ===========================================
@@ -1041,10 +980,10 @@
           ${edit(s.speaker, "p", "cover-speaker reveal")}
         </div>
       </div>`,
-      agenda: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${s.title ? edit(s.title, "h2", "reveal") : ""}${s.lead ? `<p class="lead reveal" data-editable>${esc(s.lead)}</p>` : ""}</header><div class="five">${moduleMeta.map((item) => `<div class="tile agenda-item module-${item.id} reveal"><div class="agenda-num">${String(item.id).padStart(2, "0")}</div><strong data-editable>${esc(item.title)}</strong></div>`).join("")}</div></div>`,
+      agenda: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${s.title ? edit(s.title, "h2", "reveal") : ""}${s.lead ? `<p class="lead reveal" data-editable>${esc(s.lead)}</p>` : ""}</header><div class="five">${moduleMeta.map((item) => `<div class="tile agenda-item module-${item.id} reveal"><div class="agenda-num">${String(item.id).padStart(2, "0")}</div><strong data-editable>${esc(item.title)}</strong>${item.desc ? `<span data-editable>${esc(item.desc)}</span>` : ""}</div>`).join("")}</div></div>`,
       split: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="quote reveal" data-editable style="margin-top:36px;">${esc(s.quote)}</div></div><div class="sheet reveal">${list(s.bullets)}</div></div>`,
       pain: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><pre class="sheet mono reveal" style="font-size:24px;line-height:1.55;margin-top:32px;white-space:pre-wrap;">${esc(s.code)}</pre></div><div class="three">${s.items.map((item, i) => `<div class="tile reveal"><div class="agenda-num">${String(i + 1).padStart(2, "0")}</div><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
-      definition: (s) => `<div class="frame center-frame"><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<div class="quote reveal" data-editable>${esc(s.quote)}</div><div class="three">${s.items.map((item) => `<div class="tile reveal"><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
+      definition: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}</header><div><div class="quote reveal" data-editable>${esc(s.quote)}</div><div class="three" style="margin-top:32px;">${s.items.map((item) => `<div class="tile reveal"><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div></div>`,
       roles: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="roles-layout"><div class="roles-diagram reveal">
           <div class="role-node role-user"><strong>用户</strong></div>
           <div class="role-node host role-host"><strong>MCP Host</strong><span>AI 应用</span></div>
@@ -1079,8 +1018,6 @@
     class SlidePresentation {
       constructor() {
         this.stage = document.getElementById("deckStage");
-        this.counter = document.getElementById("counter");
-        this.progressBar = document.getElementById("progressBar");
         this.indexKey = "mcp-webppt-manual-current";
         this.editKey = "mcp-webppt-manual-edits";
         this.renderSlides();
@@ -1090,7 +1027,6 @@
         this.setupNavigation();
         this.setupTouch();
         this.setupWheel();
-        this.setupEditing();
         const requested = Number.parseInt(new URLSearchParams(location.search).get("slide") || "", 10);
         const stored = Number.parseInt(localStorage.getItem(this.indexKey) || "0", 10);
         this.show(Number.isFinite(requested) ? requested - 1 : stored);
@@ -1120,16 +1056,11 @@
       }
 
       setupNavigation() {
-        document.getElementById("prevBtn").addEventListener("click", () => this.go(-1));
-        document.getElementById("nextBtn").addEventListener("click", () => this.go(1));
         document.addEventListener("keydown", (event) => {
-          if (document.body.classList.contains("editing") && ["ArrowLeft", "ArrowRight", " "].includes(event.key)) return;
           if (["ArrowRight", " ", "PageDown"].includes(event.key)) { event.preventDefault(); this.go(1); }
           if (["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); this.go(-1); }
           if (event.key === "Home") { event.preventDefault(); this.show(0); }
           if (event.key === "End") { event.preventDefault(); this.show(this.slides.length - 1); }
-          if (event.key.toLowerCase() === "e" && !event.ctrlKey && !event.metaKey) { event.preventDefault(); this.toggleEdit(); }
-          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); this.saveEdits(true); }
         });
       }
 
@@ -1156,47 +1087,6 @@
         }, { passive: true });
       }
 
-      setupEditing() {
-        const hotzone = document.getElementById("editHotzone");
-        const toggle = document.getElementById("editToggle");
-        let hideTimer;
-        const show = () => { clearTimeout(hideTimer); toggle.classList.add("show"); };
-        const hide = () => {
-          clearTimeout(hideTimer);
-          hideTimer = setTimeout(() => {
-            if (!document.body.classList.contains("editing")) toggle.classList.remove("show");
-          }, 400);
-        };
-        hotzone.addEventListener("mouseenter", show);
-        hotzone.addEventListener("mouseleave", hide);
-        toggle.addEventListener("mouseenter", show);
-        toggle.addEventListener("mouseleave", hide);
-        toggle.addEventListener("click", () => this.toggleEdit());
-        this.stage.addEventListener("input", () => {
-          if (document.body.classList.contains("editing")) this.saveEdits(false);
-        });
-      }
-
-      toggleEdit() {
-        const active = !document.body.classList.contains("editing");
-        document.body.classList.toggle("editing", active);
-        document.getElementById("editToggle").classList.toggle("active", active);
-        document.querySelectorAll("[data-editable]").forEach((el) => {
-          el.contentEditable = active ? "true" : "false";
-        });
-        if (!active) this.saveEdits(true);
-      }
-
-      saveEdits(signal) {
-        const edits = [...document.querySelectorAll("[data-editable]")].map((el) => el.innerHTML);
-        localStorage.setItem(this.editKey, JSON.stringify(edits));
-        if (signal) {
-          const old = this.counter.textContent;
-          this.counter.textContent = "SAVED";
-          setTimeout(() => this.updateChrome(), 720);
-        }
-      }
-
       restoreEdits() {
         try {
           const edits = JSON.parse(localStorage.getItem(this.editKey) || "[]");
@@ -1213,12 +1103,6 @@
           slide.classList.toggle("visible", i === this.current);
         });
         localStorage.setItem(this.indexKey, String(this.current));
-        this.updateChrome();
-      }
-
-      updateChrome() {
-        this.counter.textContent = `${String(this.current + 1).padStart(2, "0")} / ${String(this.slides.length).padStart(2, "0")}`;
-        this.progressBar.style.width = `${((this.current + 1) / this.slides.length) * 100}%`;
       }
 
       go(delta) { this.show(this.current + delta); }
