@@ -236,7 +236,7 @@
     h1, h2, h3, p { margin: 0; }
     h1, h2 { font-family: var(--font-display); letter-spacing: 0; }
     h1 { font-size: 92px; line-height: 1.06; font-weight: 800; }
-    h2 { font-size: 62px; line-height: 1.12; font-weight: 800; max-width: 1380px; }
+    h2 { font-size: 62px; line-height: 1.32; font-weight: 800; max-width: 1380px; min-height: 90px; }
     h3 { font-size: 32px; line-height: 1.2; font-weight: 700; }
     p, li { font-size: 26px; line-height: 1.46; }
     .lead { color: var(--muted); font-size: 30px; line-height: 1.45; max-width: 1240px; margin-top: 22px; }
@@ -699,6 +699,17 @@
       font-size: 23px;
       line-height: 1.42;
     }
+    .origin-grid .tile {
+      min-height: 270px;
+      padding: 24px;
+    }
+    .origin-grid .tile strong {
+      font-size: 28px;
+    }
+    .origin-grid .tile span {
+      font-size: 21px;
+      line-height: 1.42;
+    }
     .sequence-diagram {
       --sequence-blue: #1f6f8b;
       position: relative;
@@ -909,11 +920,12 @@
       { type: "agenda", folio: "02 / 目录", label: "目录", items: [["背景", "AI 应用为什么需要 MCP"], ["MCP 及其核心角色", "谁在连接外部能力"], ["MCP Server", "如何把系统封装成 AI 能力"], ["MCP Gateway", "如何统一入口、权限与治理"], ["落地路径与风险治理", "从可用到可控"]] },
       { type: "split", folio: "03 / 背景", label: "背景", title: "AI 应用为什么需要连接外部世界", lead: "大模型只负责推理和生成，真实企业任务必须访问外部系统。", bullets: ["读项目文档", "查数据库", "调内部 API", "搜索知识库", "查看日志、指标、告警", "创建工单、发起审批"], quote: "企业 AI 应用的价值，往往来自“模型 + 企业上下文 + 外部动作”。" },
       { type: "pain", reverse: true, folio: "04 / 痛点", label: "痛点", title: "点对点集成会失控", lead: "没有标准协议时，每个 AI 应用都要重复对接外部系统。", code: "Agent A -> 主数据 API / 知识库 API / 日志平台 API\nAgent B -> 主数据 API / 知识库 API / 日志平台 API\nAgent C -> ...", items: ["接入重复", "能力不可发现", "权限分散", "审计困难", "风险不可控", "描述、参数、错误格式不统一"] },
-      { type: "definition", folio: "05 / 定义", label: "定义", title: "MCP 是什么", quote: "MCP（Model Context Protocol，模型上下文协议）把外部系统包装成 AI 应用可理解、可调用、可治理的标准能力。", items: ["有哪些能力可用？", "每个能力需要什么参数？", "哪些内容可以作为上下文？", "哪些动作可以由模型发起？", "调用结果如何返回？", "客户端和服务端如何协商能力？"] },
-      { type: "roles", folio: "06 / 角色", label: "核心角色", title: "Host、Client、Server 是 MCP 的三段分工", lead: "先理解协议内的三个核心角色，再看 MCP 如何把模型和外部能力标准化连接起来。", items: [["Host", "AI 应用本体，管理用户体验、模型调用、权限决策和上下文组织"], ["Client", "Host 创建的连接会话，一条 Client 通常连接一个 MCP Server，负责协议通信"], ["Server", "外部能力适配器，把 API、数据库、文档或工具包装成 MCP 标准能力"]] },
-      { type: "design", reverse: true, folio: "07 / 设计", label: "能力设计", title: "MCP Server 不是把 API 原样透出", lead: "关键在于把业务系统能力设计成 AI 可理解、可调用、可治理的接口。", items: ["代表哪个业务域？", "暴露哪些能力给 AI？", "哪些只是读取上下文？", "哪些会产生副作用？", "哪些工具可以自动调用？", "哪些工具必须人工确认？", "哪些数据要脱敏？", "调用过程如何审计？"] },
-      { type: "triad", folio: "08 / 能力", label: "能力类型", title: "Tools / Resources / Prompts", lead: "MCP Server 暴露给 AI 应用的能力，主要分成三类。", items: [["Tools", "AI 能做什么", "查主数据、创建工单、跑查询"], ["Resources", "AI 能看什么", "文件、文档、日志、主数据记录"], ["Prompts", "经验如何模板化", "代码审查、故障分析、数据治理模板"]] },
-      { type: "sequence", folio: "09 / 调用链", label: "调用链", title: "从一次调用链理解 MCP", participants: ["用户", "AI 应用", "大模型", "MCP Client", "主数据 MCP Server", "普元 MDM 平台"], messages: [
+      { type: "origin", folio: "05 / 由来", label: "由来与规范", title: "MCP 不是某个产品，而是一套开放规范", lead: "MCP 由 Anthropic 于 2024 年 11 月开源发布，用来统一 AI 应用连接外部工具、数据和上下文的方式。", quote: "先有连接标准，再谈能力设计和企业治理。", items: [["产生背景", "大模型应用开始大量接工具、读数据，点对点集成缺少统一协议"], ["规范来源", "最初由 Anthropic 提出并开源，核心规范在 Model Context Protocol 项目中公开维护"], ["迭代过程", "不会一成不变，规范按版本演进，通过提案、实现反馈和版本协商逐步扩展"], ["协议定位", "它像 AI 应用访问外部能力的“USB-C”：定义连接方式，不替代业务系统"]] },
+      { type: "definition", folio: "06 / 定义", label: "定义", title: "MCP 到底标准化了什么", quote: "MCP（Model Context Protocol）定义的是 AI 应用与外部能力之间的通信方式：如何发现能力、传递上下文、调用工具并返回结果。", items: ["有哪些能力可用？", "每个能力需要什么参数？", "哪些内容可以作为上下文？", "哪些动作可以由模型发起？", "调用结果如何返回？", "客户端和服务端如何协商能力？"] },
+      { type: "roles", folio: "07 / 角色", label: "核心角色", title: "Host、Client、Server 是 MCP 的三段分工", lead: "先理解协议内的三个核心角色，再看 MCP 如何把模型和外部能力标准化连接起来。", items: [["Host", "AI 应用本体，管理用户体验、模型调用、权限决策和上下文组织"], ["Client", "Host 创建的连接会话，一条 Client 通常连接一个 MCP Server，负责协议通信"], ["Server", "外部能力适配器，把 API、数据库、文档或工具包装成 MCP 标准能力"]] },
+      { type: "design", reverse: true, folio: "08 / 设计", label: "能力设计", title: "MCP Server 不是把 API 原样透出", lead: "关键在于把业务系统能力设计成 AI 可理解、可调用、可治理的接口。", items: ["代表哪个业务域？", "暴露哪些能力给 AI？", "哪些只是读取上下文？", "哪些会产生副作用？", "哪些工具可以自动调用？", "哪些工具必须人工确认？", "哪些数据要脱敏？", "调用过程如何审计？"] },
+      { type: "triad", folio: "09 / 能力", label: "能力类型", title: "Tools / Resources / Prompts", lead: "MCP Server 暴露给 AI 应用的能力，主要分成三类。", items: [["Tools", "AI 能做什么", "查主数据、创建工单、跑查询"], ["Resources", "AI 能看什么", "文件、文档、日志、主数据记录"], ["Prompts", "经验如何模板化", "代码审查、故障分析、数据治理模板"]] },
+      { type: "sequence", folio: "10 / 调用链", label: "调用链", title: "从一次调用链理解 MCP", participants: ["用户", "AI 应用", "大模型", "MCP Client", "主数据 MCP Server", "普元 MDM 平台"], messages: [
         { cls: "msg-1-2", top: 78, text: "人员主数据质量检核发现重复证件号和必填字段缺失，帮我定位问题" },
         { cls: "msg-2-3", top: 130, text: "用户问题 + 可用工具列表" },
         { cls: "msg-3-2 return", top: 182, text: "建议调用 query_master_data 和 query_quality_issues" },
@@ -927,23 +939,23 @@
         { cls: "msg-3-2 return", top: 592, text: "生成解释" },
         { cls: "msg-2-1 return", top: 626, text: "命中的质量规则、问题数据范围和处理建议" }
       ], selfCall: { col: 2, top: 232, text: "检查用户权限和工具风险" } },
-      { type: "call", folio: "10 / 示例", label: "调用示例", title: "让 AI 应用安全调用企业能力", lead: "主数据只是示例，重点是 MCP 如何让 AI 应用安全调用企业能力。", items: [["识别工具", "根据工具名称、参数和描述选择能力"], ["网关校验", "按用户、角色、租户和策略判断是否允许"], ["服务执行", "MCP Server 调用主数据平台并整理返回"], ["结果治理", "返回前统一脱敏、审计和观测"]] },
-      { type: "gateway", reverse: true, folio: "11 / 网关", label: "网关价值", title: "Server 解决怎么接，Gateway 解决怎么管", lead: "能力多了以后，直连模式会把权限、命名、审计和风险控制打散。", left: ["每个 Agent 配置很多 Server", "权限策略散落", "工具命名冲突", "审计困难", "高风险调用难以统一阻断"], right: ["统一入口", "统一工具目录", "统一权限", "统一策略", "统一审计", "统一路由与观测"] },
-      { type: "duties", folio: "12 / 职责", label: "核心职责", title: "MCP Gateway 是 AI 外部能力的治理入口", lead: "网关不一定做业务逻辑，重点做治理、路由、策略和可观测。", items: [["服务注册", "企业内部 MCP 能力目录"], ["工具目录", "AI 应用可用能力清单"], ["统一入口", "降低 Agent 接入复杂度"], ["权限控制", "防止越权调用"], ["策略治理", "高风险工具确认、阻断、脱敏"], ["路由转发", "转到后端 MCP Server"], ["审计日志", "调用可追溯"], ["可观测性", "统计延迟、失败率、调用量"]] },
-      { type: "compare", folio: "13 / 边界", label: "边界", title: "MCP Gateway 与 API Gateway、AI Gateway", lead: "三类网关关注点不同，不是互相替代。", rows: [["API Gateway", "业务 API 流量", "路由、鉴权、限流、熔断"], ["AI Gateway", "模型调用流量", "模型路由、成本、token、内容安全"], ["MCP Gateway", "工具和上下文能力", "工具治理、资源访问、MCP 会话、审计"]], code: "AI 应用 -> AI Gateway -> 模型服务\nAI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统" },
-      { type: "architectureSummary", reverse: true, folio: "14 / 小结", label: "阶段小结", title: "从能力接入到统一治理", lead: "到这里可以把关系收拢成一张图：AI 应用通过 MCP 接入外部工具和资源，Gateway 负责把这些能力变成可发现、可授权、可审计的企业入口。", items: [["接入侧", "MCP Server 把外部系统包装成 AI 可理解的能力"], ["治理侧", "MCP Gateway 统一目录、权限、策略、路由和观测"], ["边界侧", "API Gateway 管业务 API，AI Gateway 管模型流量，MCP Gateway 管工具和上下文能力"]] },
-      { type: "method", reverse: true, folio: "15 / 方法", label: "设计方法", title: "不要一上来问怎么写 Server", lead: "先问 AI 场景和能力边界，再决定能力类型、风险等级和网关策略。", items: [["01", "识别 AI 场景", "用户希望 AI 完成什么任务？"], ["02", "区分上下文和动作", "AI 需要看什么，做什么？"], ["03", "按风险给工具分级", "只读、敏感只读、低风险写、高风险动作"], ["04", "决定网关策略", "工具目录、权限、审计、审批、多租户"]] },
-      { type: "risk", folio: "16 / 风险", label: "落地风险", title: "风险来自“模型可以使用外部能力”", lead: "MCP 让 AI 能接触真实系统，也就要求 Host、Server、Gateway 共同守住边界。", risks: ["Prompt Injection", "资源越权读取", "工具组合风险", "影子 MCP Server"], controls: ["Host 和 Gateway 不能只相信模型判断", "Resource 读取绑定用户身份", "高风险工具必须确认或审批", "敏感数据脱敏", "MCP Server 注册审核和白名单"] },
-      { type: "roadmap", reverse: true, folio: "17 / 路线", label: "落地路线", title: "从只读开始，逐步引入写操作和网关治理", lead: "不建议一开始就开放高风险工具，先把可读上下文和低风险查询做稳。", items: [["阶段 1", "只读资源接入", "知识库、文档、FAQ、项目 README"], ["阶段 2", "低风险查询工具", "查主数据状态、查日志、查指标"], ["阶段 3", "受控写操作", "创建工单、生成报告、发起草稿"], ["阶段 4", "高风险动作治理", "合并、删除、发布、权限变更"], ["阶段 5", "Gateway 平台化", "服务注册、工具目录、鉴权、策略、审计和观测"]] },
-      { type: "summary", folio: "18 / 总结", label: "总结", title: "MCP 解决接入，Gateway 解决治理", lead: "把外部系统变成 AI 可理解的能力之后，还需要统一入口、权限、策略、审计和治理。", items: [["MCP", "AI 应用如何标准化连接外部能力"], ["MCP Server", "把业务系统包装成能力适配器"], ["Tools", "AI 能做什么"], ["Resources", "AI 能看什么"], ["Prompts", "团队经验如何模板化复用"], ["MCP Gateway", "能力多了以后如何统一治理"]], quote: "MCP 是 AI 应用接入外部世界的协议，MCP 网关是企业治理这些外部能力的入口。" }
+      { type: "call", folio: "11 / 示例", label: "调用示例", title: "让 AI 应用安全调用企业能力", lead: "主数据只是示例，重点是 MCP 如何让 AI 应用安全调用企业能力。", items: [["识别工具", "根据工具名称、参数和描述选择能力"], ["网关校验", "按用户、角色、租户和策略判断是否允许"], ["服务执行", "MCP Server 调用主数据平台并整理返回"], ["结果治理", "返回前统一脱敏、审计和观测"]] },
+      { type: "gateway", reverse: true, folio: "12 / 网关", label: "网关价值", title: "Server 解决怎么接，Gateway 解决怎么管", lead: "能力多了以后，直连模式会把权限、命名、审计和风险控制打散。", left: ["每个 Agent 配置很多 Server", "权限策略散落", "工具命名冲突", "审计困难", "高风险调用难以统一阻断"], right: ["统一入口", "统一工具目录", "统一权限", "统一策略", "统一审计", "统一路由与观测"] },
+      { type: "duties", folio: "13 / 职责", label: "核心职责", title: "MCP Gateway 是 AI 外部能力的治理入口", lead: "网关不一定做业务逻辑，重点做治理、路由、策略和可观测。", items: [["服务注册", "企业内部 MCP 能力目录"], ["工具目录", "AI 应用可用能力清单"], ["统一入口", "降低 Agent 接入复杂度"], ["权限控制", "防止越权调用"], ["策略治理", "高风险工具确认、阻断、脱敏"], ["路由转发", "转到后端 MCP Server"], ["审计日志", "调用可追溯"], ["可观测性", "统计延迟、失败率、调用量"]] },
+      { type: "compare", folio: "14 / 边界", label: "边界", title: "MCP Gateway 与 API Gateway、AI Gateway", lead: "三类网关关注点不同，不是互相替代。", rows: [["API Gateway", "业务 API 流量", "路由、鉴权、限流、熔断"], ["AI Gateway", "模型调用流量", "模型路由、成本、token、内容安全"], ["MCP Gateway", "工具和上下文能力", "工具治理、资源访问、MCP 会话、审计"]], code: "AI 应用 -> AI Gateway -> 模型服务\nAI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统" },
+      { type: "architectureSummary", reverse: true, folio: "15 / 小结", label: "阶段小结", title: "从能力接入到统一治理", lead: "到这里可以把关系收拢成一张图：AI 应用通过 MCP 接入外部工具和资源，Gateway 负责把这些能力变成可发现、可授权、可审计的企业入口。", items: [["接入侧", "MCP Server 把外部系统包装成 AI 可理解的能力"], ["治理侧", "MCP Gateway 统一目录、权限、策略、路由和观测"], ["边界侧", "API Gateway 管业务 API，AI Gateway 管模型流量，MCP Gateway 管工具和上下文能力"]] },
+      { type: "method", reverse: true, folio: "16 / 方法", label: "设计方法", title: "不要一上来问怎么写 Server", lead: "先问 AI 场景和能力边界，再决定能力类型、风险等级和网关策略。", items: [["01", "识别 AI 场景", "用户希望 AI 完成什么任务？"], ["02", "区分上下文和动作", "AI 需要看什么，做什么？"], ["03", "按风险给工具分级", "只读、敏感只读、低风险写、高风险动作"], ["04", "决定网关策略", "工具目录、权限、审计、审批、多租户"]] },
+      { type: "risk", folio: "17 / 风险", label: "落地风险", title: "风险来自“模型可以使用外部能力”", lead: "MCP 让 AI 能接触真实系统，也就要求 Host、Server、Gateway 共同守住边界。", risks: ["Prompt Injection", "资源越权读取", "工具组合风险", "影子 MCP Server"], controls: ["Host 和 Gateway 不能只相信模型判断", "Resource 读取绑定用户身份", "高风险工具必须确认或审批", "敏感数据脱敏", "MCP Server 注册审核和白名单"] },
+      { type: "roadmap", reverse: true, folio: "18 / 路线", label: "落地路线", title: "从只读开始，逐步引入写操作和网关治理", lead: "不建议一开始就开放高风险工具，先把可读上下文和低风险查询做稳。", items: [["阶段 1", "只读资源接入", "知识库、文档、FAQ、项目 README"], ["阶段 2", "低风险查询工具", "查主数据状态、查日志、查指标"], ["阶段 3", "受控写操作", "创建工单、生成报告、发起草稿"], ["阶段 4", "高风险动作治理", "合并、删除、发布、权限变更"], ["阶段 5", "Gateway 平台化", "服务注册、工具目录、鉴权、策略、审计和观测"]] },
+      { type: "summary", folio: "19 / 总结", label: "总结", title: "MCP 解决接入，Gateway 解决治理", lead: "把外部系统变成 AI 可理解的能力之后，还需要统一入口、权限、策略、审计和治理。", items: [["MCP", "AI 应用如何标准化连接外部能力"], ["MCP Server", "把业务系统包装成能力适配器"], ["Tools", "AI 能做什么"], ["Resources", "AI 能看什么"], ["Prompts", "团队经验如何模板化复用"], ["MCP Gateway", "能力多了以后如何统一治理"]], quote: "MCP 是 AI 应用接入外部世界的协议，MCP 网关是企业治理这些外部能力的入口。" }
     ];
 
     const moduleMeta = [
       { id: 1, title: "背景", desc: "AI 应用为什么需要 MCP", pages: "03-04", start: 2, end: 3 },
-      { id: 2, title: "MCP 及其核心角色", desc: "谁在连接外部能力", pages: "05-06", start: 4, end: 5 },
-      { id: 3, title: "MCP Server", desc: "如何把系统封装成 AI 能力", pages: "07-10", start: 6, end: 9 },
-      { id: 4, title: "MCP Gateway", desc: "如何统一入口、权限与治理", pages: "11-14", start: 10, end: 13 },
-      { id: 5, title: "落地路径与风险治理", desc: "从可用到可控", pages: "15-18", start: 14, end: 17 }
+      { id: 2, title: "MCP 及其核心角色", desc: "谁在连接外部能力", pages: "05-07", start: 4, end: 6 },
+      { id: 3, title: "MCP Server", desc: "如何把系统封装成 AI 能力", pages: "08-11", start: 7, end: 10 },
+      { id: 4, title: "MCP Gateway", desc: "如何统一入口、权限与治理", pages: "12-15", start: 11, end: 14 },
+      { id: 5, title: "落地路径与风险治理", desc: "从可用到可控", pages: "16-19", start: 15, end: 18 }
     ];
 
     function getModule(slideIndex) {
@@ -983,6 +995,7 @@
       agenda: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${s.title ? edit(s.title, "h2", "reveal") : ""}${s.lead ? `<p class="lead reveal" data-editable>${esc(s.lead)}</p>` : ""}</header><div class="five">${moduleMeta.map((item) => `<div class="tile agenda-item module-${item.id} reveal"><div class="agenda-num">${String(item.id).padStart(2, "0")}</div><strong data-editable>${esc(item.title)}</strong>${item.desc ? `<span data-editable>${esc(item.desc)}</span>` : ""}</div>`).join("")}</div></div>`,
       split: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="quote reveal" data-editable style="margin-top:36px;">${esc(s.quote)}</div></div><div class="sheet reveal">${list(s.bullets)}</div></div>`,
       pain: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><pre class="sheet mono reveal" style="font-size:24px;line-height:1.55;margin-top:32px;white-space:pre-wrap;">${esc(s.code)}</pre></div><div class="three">${s.items.map((item, i) => `<div class="tile reveal"><div class="agenda-num">${String(i + 1).padStart(2, "0")}</div><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div>`,
+      origin: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="quote reveal" data-editable>${esc(s.quote)}</div><div class="four origin-grid" style="margin-top:28px;">${s.items.map(tile).join("")}</div></div></div>`,
       definition: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}</header><div><div class="quote reveal" data-editable>${esc(s.quote)}</div><div class="three" style="margin-top:32px;">${s.items.map((item) => `<div class="tile reveal"><strong data-editable>${esc(item)}</strong></div>`).join("")}</div></div></div>`,
       roles: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="roles-layout"><div class="roles-diagram reveal">
           <div class="role-node role-user"><strong>用户</strong></div>
@@ -1040,7 +1053,7 @@
             ? `<div class="module-bar"><span class="module-index">模块 ${String(module.id).padStart(2, "0")}</span><span class="module-title">${esc(module.title)}</span><span class="module-pages">${esc(module.pages)}</span></div>`
             : "";
           const cls = `${s.reverse ? "slide reverse" : "slide"}${module ? ` module-${module.id}` : ""}`;
-          return `<section class="${cls}" data-folio="${esc(s.folio)}" aria-label="${i + 1}. ${esc(s.title)}">${moduleBar}${body}</section>`;
+          return `<section class="${cls}" data-folio="${esc(s.folio)}" aria-label="${i + 1}. ${esc(s.title || s.label || s.folio)}">${moduleBar}${body}</section>`;
         }).join("");
       }
 
