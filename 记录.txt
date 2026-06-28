@@ -85,3 +85,22 @@ MCP Gateway 核心职责
 - **MCP 是它调用外部能力的协议**
 
 如果你愿意，我可以顺手给你画一张“AI 应用 / Agent / MCP / Host / Client / Server”的关系图，直接能放到 PPT 里。
+
+
+
+D:\project\MCP\code\.venv\Scripts\python.exe
+
+D:\project\MCP\code\platform_mcp_server.py
+
+Codex 配置：
+[mcp_servers.demo_platform]
+command = "D:\\project\\MCP\\code\\.venv\\Scripts\\python.exe"
+args = ["D:\\project\\MCP\\code\\platform_mcp_server.py"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+default_tools_approval_mode = "prompt"
+
+提示词
+请使用 demo-platform-mcp 查询订单 O-20260628-001 的状态，并说明现在卡在哪一步。
+请使用 demo-platform-mcp：先查询订单 O-20260628-001 的状态，再搜索这个订单相关工单，最后给我一个处理建议。
+请使用 demo-platform-mcp 创建一个 P2 工单，标题是“订单地址校验失败”，描述是“用户提交的收货地址缺少城市字段，需要平台团队排查”。

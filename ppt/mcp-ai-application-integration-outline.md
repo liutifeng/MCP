@@ -200,7 +200,97 @@ MCP Server 设计要回答：
 - Resources 是上下文，关键在权限和准确性。
 - Prompts 是团队经验沉淀，不是模型随意调用的工具。
 
-## 10. 从一次调用链理解 MCP
+## 10. 实际案例：把内部工单平台 MCP 化
+
+**核心观点**：MCP 化不是重写平台，而是在已有平台 API 外面增加一层 MCP Server。
+
+页面内容：
+
+```text
+AI 应用
+  -> MCP Client
+  -> 工单 MCP Server
+  -> 内部工单平台 API
+```
+
+接口映射示例：
+
+| 平台接口 | MCP 能力 | 说明 |
+| --- | --- | --- |
+| GET /tickets?keyword=xxx | Tool: search_tickets | 查询工单 |
+| GET /orders/{id}/status | Tool: get_order_status | 查询订单状态 |
+| POST /tickets | Tool: create_ticket | 创建工单，建议确认 |
+| GET /tickets/{id} | Resource: ticket://{ticket_id} | 读取工单详情 |
+| 固定排查流程 | Prompt: ticket_triage_prompt | 沉淀排查经验 |
+
+讲述要点：
+
+- 查询类能力可以先做成低风险 tool。
+- 写操作需要确认、审计和权限控制。
+- 详情数据适合做 resource，固定经验适合做 prompt。
+
+## 11. 最小代码：用 MCP Server 包装已有接口
+
+**核心观点**：真实项目中把静态数据替换成 HTTP / RPC / 数据库调用即可。
+
+主要步骤：
+
+1. 定义能力边界：哪些能给 AI 用，哪些不能暴露。
+2. 映射 MCP 类型：Tools、Resources、Prompts。
+3. 包装平台接口：MCP Server 内部调用现有 API。
+4. 补安全治理：认证、审计、脱敏、超时、错误处理。
+
+代码要点：
+
+```python
+mcp = FastMCP("demo-platform-mcp")
+
+@mcp.tool()
+def get_order_status(order_id: str) -> str:
+    ...
+
+@mcp.resource("ticket://{ticket_id}")
+def get_ticket(ticket_id: str) -> str:
+    ...
+
+@mcp.prompt()
+def ticket_triage_prompt(order_id: str) -> str:
+    ...
+```
+
+## 12. 接入 AI 应用：注册到 Codex 桌面版
+
+**核心观点**：MCP Server 做好后，需要注册到 AI Host，AI 应用才能发现和调用它。
+
+Codex 桌面版接入方式：
+
+```text
+Settings -> Integrations & MCP -> Add MCP Server
+```
+
+配置示例：
+
+```toml
+[mcp_servers.demo_platform]
+command = "D:\\project\\MCP\\code\\.venv\\Scripts\\python.exe"
+args = ["D:\\project\\MCP\\code\\platform_mcp_server.py"]
+default_tools_approval_mode = "prompt"
+```
+
+触发提示词：
+
+```text
+请使用 demo_platform MCP：先查询订单 O-20260628-001 的状态，
+再搜索这个订单相关工单，最后读取 ticket://T-1001，并给出处理建议。
+```
+
+讲述要点：
+
+- AI 应用作为 Host，负责连接 MCP Server。
+- 模型根据工具描述判断是否调用。
+- 有副作用的工具建议保持确认模式。
+
+## 13. 从一次调用链理解 MCP
 
 **核心观点**：通过一次工具调用链，理解 MCP 如何把 AI 问答连接到真实业务系统。
 
@@ -232,7 +322,7 @@ MCP Server 设计要回答：
 - 使用时序图。
 - 标出 `get_master_data`、`get_field_rules` 两个能力。
 
-## 11. MCP 服务调用示例
+## 14. MCP 服务调用示例
 
 **核心观点**：主数据只是示例，重点是 MCP 如何让 AI 应用安全调用企业能力。
 
@@ -254,7 +344,7 @@ AI 需要的能力：
 - MCP Server 调用主数据平台并整理返回结构。
 - 结果返回前可以统一脱敏、审计和观测。
 
-## 12. 为什么需要 MCP Gateway
+## 15. 为什么需要 MCP Gateway
 
 **核心观点**：MCP Server 解决“怎么接能力”，MCP Gateway 解决“能力多了以后怎么管”。
 
@@ -283,7 +373,7 @@ AI 需要的能力：
 多个 Agent -> MCP Gateway -> 多个 MCP Server
 ```
 
-## 13. MCP Gateway 核心职责
+## 16. MCP Gateway 核心职责
 
 **核心观点**：MCP Gateway 是 AI 外部能力的治理入口。
 
@@ -305,7 +395,7 @@ AI 需要的能力：
 - 网关不一定做业务逻辑。
 - 网关重点做治理、路由、策略和可观测。
 
-## 14. MCP Gateway 与 API Gateway、AI Gateway 的区别
+## 17. MCP Gateway 与 API Gateway、AI Gateway 的区别
 
 **核心观点**：三类网关关注点不同，不是互相替代。
 
@@ -330,7 +420,7 @@ AI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统
 - AI Gateway 管模型请求。
 - MCP Gateway 管 AI 可以使用哪些外部能力。
 
-## 15. 面向 AI 应用集成的设计方法
+## 18. 面向 AI 应用集成的设计方法
 
 **核心观点**：不要一上来问怎么写 Server，先问 AI 场景和能力边界。
 
@@ -349,7 +439,7 @@ AI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统
 - 需要做：创建工单、生成报告、提交审批。
 - 高风险：合并、删除、强制生效、改权限。
 
-## 16. 企业落地风险
+## 19. 企业落地风险
 
 **核心观点**：MCP 的风险来自“模型可以使用外部能力”。
 
@@ -370,7 +460,7 @@ AI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统
 - 敏感数据脱敏。
 - MCP Server 注册审核和白名单。
 
-## 17. 落地路线
+## 20. 落地路线
 
 **核心观点**：从只读场景开始，逐步引入写操作和网关治理。
 
@@ -399,7 +489,7 @@ AI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统
 - 先把可读上下文和低风险查询做稳。
 - 网关能力随着 MCP Server 数量和风险等级逐步增强。
 
-## 18. 总结页
+## 21. 总结页
 
 **核心观点**：MCP 解决接入，Gateway 解决治理。
 
@@ -418,7 +508,7 @@ MCP Gateway 解决：能力多了以后如何统一入口、权限、策略、�
 
 > MCP 是 AI 应用接入外部世界的协议，MCP 网关是企业治理这些外部能力的入口。
 
-## 19. Q&A 备选页
+## 22. Q&A 备选页
 
 可准备的问题：
 
