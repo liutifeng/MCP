@@ -165,7 +165,7 @@ Prompts 对应的是经验如何模板化，比如代码审查模板、故障分
 
 AI 应用看到的是 MCP Server 暴露出来的 tools、resources 和 prompts。MCP Server 内部再去调用原来的订单接口、工单接口、审批接口。
 
-比如原来有一个接口 GET /tickets，可以映射成 search_tickets 这个 tool；GET /orders/{id}/status 可以映射成 get_order_status；POST /tickets 可以映射成 create_ticket。
+比如原来有一个查询工单列表的接口，可以映射成 search_tickets 这个 tool；查询指定订单状态的接口，映射成 get_order_status；创建工单的接口，映射成 create_ticket。
 
 如果是读取某个工单详情，可以暴露成 ticket://{ticket_id} 这种 Resource；如果团队有固定的订单问题排查流程，可以沉淀成 ticket_triage_prompt。
 
