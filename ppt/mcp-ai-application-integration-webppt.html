@@ -353,6 +353,16 @@
       font: 700 32px/1.2 var(--font-body);
       margin-top: 28px;
     }
+    .thanks-frame {
+      align-content: center;
+      justify-items: center;
+      text-align: center;
+    }
+    .thanks-frame h1 {
+      font-size: 132px;
+      line-height: 1;
+      font-weight: 800;
+    }
     .stack-frame { grid-template-rows: auto 1fr; }
     .split-frame { grid-template-columns: .9fr 1.1fr; align-items: stretch; gap: 48px; }
     .center-frame { align-content: center; gap: 32px; }
@@ -1079,7 +1089,8 @@
       { type: "method", reverse: true, folio: "19 / 方法", label: "设计方法", title: "不要一上来问怎么写 Server", lead: "先问 AI 场景和能力边界，再决定能力类型、风险等级和网关策略。", items: [["01", "识别 AI 场景", "用户希望 AI 完成什么任务？"], ["02", "区分上下文和动作", "AI 需要看什么，做什么？"], ["03", "按风险给工具分级", "只读、敏感只读、低风险写、高风险动作"], ["04", "决定网关策略", "工具目录、权限、审计、审批、多租户"]] },
       { type: "risk", folio: "20 / 风险", label: "落地风险", title: "风险来自“模型可以使用外部能力”", lead: "MCP 让 AI 能接触真实系统，也就要求 Host、Server、Gateway 共同守住边界。", risks: ["Prompt Injection", "资源越权读取", "工具组合风险", "影子 MCP Server"], controls: ["Host 和 Gateway 不能只相信模型判断", "Resource 读取绑定用户身份", "高风险工具必须确认或审批", "敏感数据脱敏", "MCP Server 注册审核和白名单"] },
       { type: "roadmap", reverse: true, folio: "21 / 路线", label: "落地路线", title: "从只读开始，逐步引入写操作和网关治理", lead: "不建议一开始就开放高风险工具，先把可读上下文和低风险查询做稳。", items: [["阶段 1", "只读资源接入", "知识库、文档、FAQ、项目 README"], ["阶段 2", "低风险查询工具", "查数据状态、查日志、查指标"], ["阶段 3", "受控写操作", "创建工单、生成报告、发起草稿"], ["阶段 4", "高风险动作治理", "合并、删除、发布、权限变更"], ["阶段 5", "Gateway 平台化", "服务注册、工具目录、鉴权、策略、审计和观测"]] },
-      { type: "summary", folio: "22 / 总结", label: "总结", title: "MCP Server 解决接入，MCP Gateway 解决治理", lead: "MCP 协议定义标准通信方式，MCP Server 负责能力接入，MCP Gateway 负责统一治理。", items: [["MCP 协议", "定义 AI 应用和外部能力之间的标准通信方式"], ["MCP Server", "把业务系统包装成能力适配器"], ["Tools", "AI 能做什么"], ["Resources", "AI 能看什么"], ["Prompts", "团队经验如何模板化复用"], ["MCP Gateway", "能力多了以后如何统一治理"]], quote: "MCP Server 是 AI 应用接入外部世界的能力适配层，MCP Gateway 是企业治理这些外部能力的统一入口。" }
+      { type: "summary", folio: "22 / 总结", label: "总结", title: "MCP Server 解决接入，MCP Gateway 解决治理", lead: "MCP 协议定义标准通信方式，MCP Server 负责能力接入，MCP Gateway 负责统一治理。", items: [["MCP 协议", "定义 AI 应用和外部能力之间的标准通信方式"], ["MCP Server", "把业务系统包装成能力适配器"], ["Tools", "AI 能做什么"], ["Resources", "AI 能看什么"], ["Prompts", "团队经验如何模板化复用"], ["MCP Gateway", "能力多了以后如何统一治理"]], quote: "MCP Server 是 AI 应用接入外部世界的能力适配层，MCP Gateway 是企业治理这些外部能力的统一入口。" },
+      { type: "thanks", reverse: true, folio: "23 / 谢谢", title: "谢谢" }
     ];
 
     const moduleMeta = [
@@ -1087,7 +1098,7 @@
       { id: 2, title: "MCP 及其核心角色", desc: "谁在连接外部能力", pages: "05-07", start: 4, end: 6 },
       { id: 3, title: "MCP Server", desc: "如何把系统封装成 AI 能力", pages: "08-14", start: 7, end: 13 },
       { id: 4, title: "MCP Gateway", desc: "如何统一入口、权限与治理", pages: "15-18", start: 14, end: 17 },
-      { id: 5, title: "落地路径与风险治理", desc: "从可用到可控", pages: "19-22", start: 18, end: 21 }
+      { id: 5, title: "落地路径与风险治理", desc: "从可用到可控", pages: "19-23", start: 18, end: 22 }
     ];
 
     function getModule(slideIndex) {
@@ -1157,6 +1168,7 @@
       risk: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="ribbon reveal" style="margin-top:30px;">${s.risks.map((risk) => `<span class="tag">${esc(risk)}</span>`).join("")}</div></div><div class="sheet reveal"><h3>控制建议</h3><div style="margin-top:24px;">${list(s.controls)}</div></div></div>`,
       roadmap: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="timeline reveal">${s.items.map(([phase, title, body]) => `<div class="phase"><strong>${esc(phase)} · ${esc(title)}</strong><span>${esc(body)}</span></div>`).join("")}</div></div>`,
       summary: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="three">${s.items.map(tile).join("")}</div><div class="quote reveal" data-editable style="margin-top:24px;">${esc(s.quote)}</div></div></div>`,
+      thanks: (s) => `<div class="frame thanks-frame">${edit(s.title, "h1", "reveal")}</div>`,
       qa: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two">${s.items.map(tile).join("")}</div></div>`
     };
 
