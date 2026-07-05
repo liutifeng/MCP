@@ -214,7 +214,7 @@ Prompts 对应的是经验如何模板化，比如代码审查模板、故障分
 
 【此处插入Codex注册MCP服务演示】
 
-注册以后，Codex 会发现这个 MCP Server 暴露的工具，比如 search_tickets、get_order_status、create_ticket，也能看到 resource template 和 prompt。
+注册以后，Codex 会发现这个 MCP Server 暴露的工具。
 
 我们来用这段提示词测试一下：请使用 demo_platform MCP：先查询订单 O-20260628-001 的状态，再搜索这个订单相关工单，最后读取 ticket://T-1001，并给出处理建议。
 
@@ -310,7 +310,7 @@ MCP Gateway 不一定承担业务逻辑，它的重点放在治理、路由、�
 
 【此处演示ESB相关页面】
 
-大家如果感兴趣，后续可以关注一下ESB新版本的发布，也会有一些新功能分享会。
+大家如果感兴趣，后续可以关注一下ESB新版本的发布和分享会。
 
 转场：那么它和我们熟悉的 API Gateway、AI Gateway 又有什么区别？
 
