@@ -375,6 +375,97 @@
     .five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
     .summary-points { display: grid; gap: 16px; margin-top: 34px; }
     .summary-points .tile { min-height: 128px; }
+    .summary-map {
+      display: grid;
+      grid-template-columns: 1.12fr .88fr;
+      grid-template-rows: auto 1fr auto;
+      gap: 20px 24px;
+      align-items: stretch;
+    }
+    .summary-node {
+      position: relative;
+      border: 1px solid var(--rule);
+      background: rgba(252,255,247,.84);
+      box-shadow: var(--card-shadow);
+      padding: 22px 26px;
+      overflow: hidden;
+    }
+    .summary-node::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 7px;
+      height: 100%;
+      background: var(--summary-accent, var(--blue));
+    }
+    .summary-node strong {
+      display: block;
+      font: 900 31px/1.16 var(--font-body);
+      margin-bottom: 9px;
+      color: var(--ink);
+    }
+    .summary-node span {
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.34;
+    }
+    .summary-protocol {
+      grid-column: 1 / -1;
+      --summary-accent: var(--blue);
+      background: linear-gradient(90deg, rgba(31,111,139,.15), rgba(252,255,247,.88) 54%, rgba(98,125,67,.10));
+      min-height: 118px;
+    }
+    .summary-server {
+      grid-column: 1;
+      --summary-accent: var(--cyan);
+      background: linear-gradient(180deg, rgba(40,166,183,.13), rgba(252,255,247,.88) 44%);
+      min-height: 318px;
+      padding-bottom: 24px;
+    }
+    .summary-gateway {
+      grid-column: 2;
+      --summary-accent: var(--gold);
+      background: linear-gradient(180deg, rgba(180,135,46,.16), rgba(252,255,247,.88) 48%);
+      min-height: 318px;
+    }
+    .summary-capabilities {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .summary-capability-title {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 8px 12px;
+      border: 1px solid rgba(40,166,183,.32);
+      background: rgba(40,166,183,.10);
+      color: var(--blue);
+      font: 800 18px/1 var(--font-body);
+    }
+    .summary-capability {
+      border: 1px solid rgba(40,166,183,.28);
+      background: rgba(252,255,247,.76);
+      padding: 18px 16px;
+      min-height: 138px;
+    }
+    .summary-capability strong {
+      font-size: 24px;
+      line-height: 1.14;
+      margin-bottom: 8px;
+    }
+    .summary-capability span {
+      font-size: 19px;
+      line-height: 1.32;
+    }
+    .summary-capability.tools { border-color: rgba(31,111,139,.34); background: rgba(40,166,183,.11); }
+    .summary-capability.resources { border-color: rgba(98,125,67,.34); background: rgba(98,125,67,.11); }
+    .summary-capability.prompts { border-color: rgba(180,135,46,.38); background: rgba(180,135,46,.12); }
+    .summary-map .quote {
+      grid-column: 1 / -1;
+      margin-top: 0;
+    }
 
     /* ===========================================
        DOCUMENT COMPONENTS
@@ -506,14 +597,15 @@
     }
     .mapping-grid {
       display: grid;
-      grid-template-columns: .95fr 1.05fr;
-      gap: 15px;
+      grid-template-columns: 1.04fr .96fr;
+      grid-template-rows: repeat(6, minmax(58px, 1fr));
+      gap: 13px;
     }
     .mapping-card {
       border: 1px solid var(--rule);
       background: rgba(252,255,247,.82);
-      padding: 22px;
-      min-height: 146px;
+      padding: 19px 21px;
+      min-height: 132px;
       box-shadow: var(--card-shadow);
       position: relative;
       overflow: hidden;
@@ -527,11 +619,48 @@
       height: 5px;
       background: linear-gradient(90deg, var(--module-color, var(--blue)), transparent);
     }
+    .mapping-card::after {
+      position: absolute;
+      right: 14px;
+      top: 12px;
+      padding: 5px 8px;
+      border: 1px solid currentColor;
+      background: rgba(252,255,247,.74);
+      font: 800 11px/1 var(--font-mono);
+      letter-spacing: .08em;
+    }
+    .mapping-card.mapping-tool {
+      grid-column: 1;
+      border-color: rgba(31,111,139,.35);
+      background: linear-gradient(180deg, rgba(40,166,183,.13), rgba(252,255,247,.86) 58%);
+    }
+    .mapping-card.mapping-tool:nth-child(1) { grid-row: 1 / span 2; }
+    .mapping-card.mapping-tool:nth-child(2) { grid-row: 3 / span 2; }
+    .mapping-card.mapping-tool:nth-child(3) { grid-row: 5 / span 2; }
+    .mapping-card.mapping-tool::before { background: linear-gradient(90deg, var(--cyan), rgba(40,166,183,.08)); }
+    .mapping-card.mapping-tool::after { content: "TOOL"; color: var(--blue); }
+    .mapping-card.mapping-resource {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      border-color: rgba(98,125,67,.38);
+      background: linear-gradient(180deg, rgba(98,125,67,.16), rgba(252,255,247,.88) 56%);
+    }
+    .mapping-card.mapping-resource::before { background: linear-gradient(90deg, var(--olive), rgba(98,125,67,.08)); }
+    .mapping-card.mapping-resource::after { content: "RESOURCE"; color: var(--olive); }
+    .mapping-card.mapping-prompt {
+      grid-column: 2;
+      grid-row: 4 / span 3;
+      border-color: rgba(180,135,46,.44);
+      background: linear-gradient(180deg, rgba(180,135,46,.18), rgba(252,255,247,.88) 58%);
+    }
+    .mapping-card.mapping-prompt::before { background: linear-gradient(90deg, var(--gold), rgba(180,135,46,.08)); }
+    .mapping-card.mapping-prompt::after { content: "PROMPT"; color: var(--gold); }
     .mapping-card code {
       display: block;
       color: var(--ink);
-      font: 700 22px/1.28 var(--font-mono);
-      margin-bottom: 12px;
+      font: 700 20px/1.28 var(--font-mono);
+      margin: 8px 0 11px;
+      padding-right: 78px;
     }
     .mapping-card strong {
       display: block;
@@ -772,12 +901,12 @@
     .role-node.system {
       min-width: 162px;
     }
-    .role-user { left: 54px; top: 284px; }
-    .role-host { left: 210px; top: 270px; }
-    .role-model { left: 462px; top: 145px; }
-    .role-client { left: 462px; top: 416px; }
-    .role-server { left: 636px; top: 416px; }
-    .role-system { left: 820px; top: 416px; }
+    .role-user { left: 31px; top: 274px; }
+    .role-host { left: 187px; top: 260px; }
+    .role-model { left: 207px; top: 382px; }
+    .role-client { left: 407px; top: 260px; }
+    .role-server { left: 607px; top: 260px; }
+    .role-system { left: 817px; top: 260px; }
     .role-edge {
       position: absolute;
       z-index: 2;
@@ -804,11 +933,11 @@
       border-top: 7px solid transparent;
       border-bottom: 7px solid transparent;
     }
-    .role-edge.e-user-host { left: 160px; top: 310px; width: 48px; }
-    .role-edge.e-host-model { left: 350px; top: 276px; width: 140px; transform: rotate(-39deg); }
-    .role-edge.e-host-client { left: 350px; top: 334px; width: 140px; transform: rotate(39deg); }
-    .role-edge.e-client-server { left: 600px; top: 454px; width: 40px; }
-    .role-edge.e-server-system { left: 786px; top: 454px; width: 38px; transform: none; }
+    .role-edge.e-user-host { left: 137px; top: 300px; width: 48px; }
+    .role-edge.e-host-model { left: 263px; top: 333px; width: 44px; transform: rotate(90deg); }
+    .role-edge.e-host-client { left: 333px; top: 300px; width: 71px; transform: none; }
+    .role-edge.e-client-server { left: 548px; top: 300px; width: 57px; }
+    .role-edge.e-server-system { left: 756px; top: 300px; width: 59px; transform: none; }
     .roles-cards {
       display: grid;
       grid-template-columns: 1fr;
@@ -1085,7 +1214,7 @@
         { cls: "msg-2-1 return msg-final-advice", top: 626, text: "订单当前状态、关联工单和下一步处理建议" }
       ], selfCall: { col: 2, top: 232, text: "检查用户权限和工具风险" } },
       { type: "call", folio: "14 / 示例", label: "调用示例", title: "让 AI 应用安全调用企业能力", lead: "订单和工单只是示例，重点是 MCP 如何让 AI 应用安全调用企业能力。", items: [["识别工具", "根据工具名称、参数和描述选择能力"], ["网关校验", "按用户、角色、租户和策略判断是否允许"], ["服务执行", "工单 MCP Server 调用内部工单平台并整理返回"], ["结果治理", "返回前统一脱敏、审计和观测"]] },
-      { type: "gateway", reverse: true, folio: "15 / 网关", label: "网关价值", title: "Server 解决怎么接，Gateway 解决怎么管", lead: "能力多了以后，直连模式会把权限、命名、审计和风险控制打散。", left: ["每个 Agent 配置很多 Server", "权限策略散落", "工具命名冲突", "审计困难", "高风险调用难以统一阻断"], right: ["统一入口", "统一工具目录", "统一权限", "统一策略", "统一审计", "统一路由与观测"] },
+      { type: "gateway", reverse: true, folio: "15 / 网关", label: "网关价值", title: "MCP Server 解决能力适配，MCP Gateway 解决能力治理", lead: "能力多了以后，直连模式会把权限、命名、审计和风险控制打散。", left: ["每个 Agent 配置很多 Server", "权限策略散落", "工具命名冲突", "审计困难", "高风险调用难以统一阻断"], right: ["统一入口", "统一工具目录", "统一权限", "统一策略", "统一审计", "统一路由与观测"] },
       { type: "duties", folio: "16 / 职责", label: "核心职责", title: "MCP Gateway 是 AI 外部能力的治理入口", lead: "网关不一定做业务逻辑，重点做治理、路由、策略和可观测。", items: [["服务注册", "企业内部 MCP 能力目录"], ["工具目录", "AI 应用可用能力清单"], ["统一入口", "降低 Agent 接入复杂度"], ["权限控制", "防止越权调用"], ["策略治理", "高风险工具确认、阻断、脱敏"], ["路由转发", "转到后端 MCP Server"], ["审计日志", "调用可追溯"], ["可观测性", "统计延迟、失败率、调用量"]] },
       { type: "compare", folio: "17 / 边界", label: "边界", title: "MCP Gateway 与 API Gateway、AI Gateway", lead: "三类网关关注点不同，不是互相替代。", rows: [["API Gateway", "业务 API 流量", "路由、鉴权、限流、熔断"], ["AI Gateway", "模型调用流量", "模型路由、成本、token、内容安全"], ["MCP Gateway", "工具和上下文能力", "工具治理、资源访问、MCP 会话、审计"]], code: "AI 应用 -> AI Gateway -> 模型服务\nAI 应用 -> MCP Gateway -> MCP Server -> API Gateway -> 业务系统" },
       { type: "architectureSummary", reverse: true, folio: "18 / 小结", label: "阶段小结", title: "从能力接入到统一治理", lead: "到这里可以把关系收拢成一张图：AI 应用通过 MCP 接入外部工具和资源，Gateway 负责把这些能力变成可发现、可授权、可审计的企业入口。", items: [["接入侧", "MCP Server 把外部系统包装成 AI 可理解的能力"], ["治理侧", "MCP Gateway 统一目录、权限、策略、路由和观测"], ["边界侧", "API Gateway 管业务 API，AI Gateway 管模型流量，MCP Gateway 管工具和上下文能力"]] },
@@ -1115,6 +1244,7 @@
     const edit = (value, tag = "span", cls = "") => `<${tag} class="${cls}" data-editable>${esc(value)}</${tag}>`;
     const list = (items) => `<ul class="list">${items.map((item) => `<li data-editable>${esc(item)}</li>`).join("")}</ul>`;
     const tile = ([title, body, note]) => `<div class="tile reveal"><strong data-editable>${esc(title)}</strong><span data-editable>${esc(body || "")}</span>${note ? `<div class="tag" style="margin-top:18px;width:max-content;">${esc(note)}</div>` : ""}</div>`;
+    const mappingKind = (label) => label.startsWith("Resource:") ? "resource" : label.startsWith("Prompt:") ? "prompt" : "tool";
     const mapDiagram = () => `<div class="cover-map reveal">
           <svg class="map-links" viewBox="0 0 928 700" preserveAspectRatio="none" aria-hidden="true">
             <path class="map-path" d="M 216 342 H 258" />
@@ -1160,7 +1290,7 @@
       triad: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="three">${s.items.map(tile).join("")}</div></div>`,
       sequence: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}</header><div class="sheet sequence-diagram reveal"><div class="mermaid-sequence">${s.participants.map((name, i) => `<div class="seq-participant top seq-col-${i + 1}">${esc(name)}</div><div class="seq-participant bottom seq-col-${i + 1}">${esc(name)}</div><div class="seq-lifeline seq-col-${i + 1}"></div>`).join("")}${s.messages.map((m) => `<div class="seq-message ${esc(m.cls)}" style="top:${Number(m.top)}px;"><div class="seq-line"></div><div class="seq-text">${esc(m.text)}</div></div>`).join("")}<div class="seq-self seq-col-${s.selfCall.col}" style="top:${Number(s.selfCall.top)}px;"></div><div class="seq-self-label seq-col-${s.selfCall.col}" style="top:${Number(s.selfCall.top) - 24}px;">${esc(s.selfCall.text)}</div></div></div></div>`,
       call: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="four">${s.items.map((item, i) => `<div class="tile reveal"><div class="agenda-num">0${i + 1}</div><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div>`).join("")}</div></div>`,
-      mcpCase: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="case-layout"><div class="case-flow reveal">${s.flow.map((item, i) => `<div>${i ? `<div class="case-arrow">↓</div>` : ""}<div class="case-node"><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div></div>`).join("")}</div><div class="mapping-grid reveal">${s.mappings.map((item) => `<div class="mapping-card"><code>${esc(item[0])}</code><strong>${esc(item[1])}</strong><span>${esc(item[2])}</span></div>`).join("")}</div></div></div>`,
+      mcpCase: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="case-layout"><div class="case-flow reveal">${s.flow.map((item, i) => `<div>${i ? `<div class="case-arrow">↓</div>` : ""}<div class="case-node"><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div></div>`).join("")}</div><div class="mapping-grid reveal">${s.mappings.map((item) => `<div class="mapping-card mapping-${mappingKind(item[1])}"><code>${esc(item[0])}</code><strong>${esc(item[1])}</strong><span>${esc(item[2])}</span></div>`).join("")}</div></div></div>`,
       codeDemo: (s) => `<div class="frame code-layout"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="two" style="margin-top:28px;">${s.steps.map(([num, title, body]) => `<div class="tile reveal"><div class="agenda-num">${esc(num)}</div><strong>${esc(title)}</strong><span>${esc(body)}</span></div>`).join("")}</div></div><pre class="code-pane reveal">${esc(s.code)}</pre></div>`,
       codexDemo: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="case-layout"><div><pre class="code-pane reveal" style="min-height:360px;">${esc(s.config)}</pre><div class="prompt-box reveal" style="margin-top:22px;">${esc(s.prompt)}</div></div><div class="setup-grid">${s.cards.map(tile).join("")}</div></div></div>`,
       gateway: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two reveal"><div class="sheet"><h3>直连模式问题</h3><div style="margin-top:24px;">${list(s.left)}</div></div><div class="sheet"><h3>网关模式价值</h3><div style="margin-top:24px;">${list(s.right)}</div></div></div></div>`,
@@ -1170,7 +1300,7 @@
       method: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="four">${s.items.map(([num, title, body]) => `<div class="tile reveal"><div class="agenda-num">${esc(num)}</div><strong>${esc(title)}</strong><span>${esc(body)}</span></div>`).join("")}</div></div>`,
       risk: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="ribbon reveal" style="margin-top:30px;">${s.risks.map((risk) => `<span class="tag">${esc(risk)}</span>`).join("")}</div></div><div class="sheet reveal"><h3>控制建议</h3><div style="margin-top:24px;">${list(s.controls)}</div></div></div>`,
       roadmap: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="timeline reveal">${s.items.map(([phase, title, body]) => `<div class="phase"><strong>${esc(phase)} · ${esc(title)}</strong><span>${esc(body)}</span></div>`).join("")}</div></div>`,
-      summary: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div><div class="three">${s.items.map(tile).join("")}</div><div class="quote reveal" data-editable style="margin-top:24px;">${esc(s.quote)}</div></div></div>`,
+      summary: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="summary-map reveal"><div class="summary-node summary-protocol"><strong data-editable>${esc(s.items[0][0])}</strong><span data-editable>${esc(s.items[0][1])}</span></div><div class="summary-node summary-server"><strong data-editable>${esc(s.items[1][0])}</strong><span data-editable>${esc(s.items[1][1])}</span><div class="summary-capability-title">MCP Server 暴露的能力类型</div><div class="summary-capabilities"><div class="summary-capability tools"><strong data-editable>${esc(s.items[2][0])}</strong><span data-editable>${esc(s.items[2][1])}</span></div><div class="summary-capability resources"><strong data-editable>${esc(s.items[3][0])}</strong><span data-editable>${esc(s.items[3][1])}</span></div><div class="summary-capability prompts"><strong data-editable>${esc(s.items[4][0])}</strong><span data-editable>${esc(s.items[4][1])}</span></div></div></div><div class="summary-node summary-gateway"><strong data-editable>${esc(s.items[5][0])}</strong><span data-editable>${esc(s.items[5][1])}</span></div><div class="quote" data-editable>${esc(s.quote)}</div></div></div>`,
       thanks: (s) => `<div class="frame thanks-frame">${edit(s.title, "h1", "reveal")}</div>`,
       qa: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two">${s.items.map(tile).join("")}</div></div>`
     };
