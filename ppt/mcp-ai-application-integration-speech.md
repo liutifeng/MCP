@@ -178,9 +178,9 @@ Prompts 对应的是经验如何模板化，比如代码审查模板、故障分
 
 右侧代码展示的是最小形态：用 FastMCP 定义一个 server，然后用 @mcp.tool、@mcp.resource、@mcp.prompt 分别暴露工具、资源和提示模板。
 
-【这里给大家看下这个 MCP Server 的代码实现，对应文件是 D:\project\MCP\code\platform_mcp_server.py】
+【这里给大家看下这个 MCP Server 的代码实现】
 
-这段代码是用 Python 实现的。
+【这段代码是用 Python 实现的。
 
 前面这三个模块是Python标准库提供的，FastMCP是 MCP Python SDK 提供的类，它负责把我们写的 Python 函数注册成 MCP Server 暴露出去的能力。
 
@@ -196,7 +196,7 @@ Prompts 对应的是经验如何模板化，比如代码审查模板、故障分
 
 所以这段代码对应的核心关系就是：`FastMCP` 负责搭 MCP Server 的框架；`tool` 暴露可调用动作；`resource` 暴露可读取上下文；`prompt` 暴露可复用任务模板。我们把已有平台能力包进这三类接口里，AI 应用就不需要直接理解内部系统 API，而是按 MCP 标准来发现和调用。
 
-最后，代码底部的 `mcp.run(transport="stdio")` 表示这个 Server 通过标准输入输出和客户端通信。这种方式很适合本地桌面 AI 应用拉起，比如 Codex 或 Claude Desktop。它不需要我们额外启动一个 HTTP 服务，也不需要开放端口，客户端启动这个 Python 脚本以后，就可以通过标准输入输出和它完成 MCP 通信。
+最后，代码底部的 `mcp.run(transport="stdio")` 表示这个 Server 通过标准输入输出和客户端通信。这种方式很适合本地桌面 AI 应用拉起，比如 Codex 或 Claude Desktop。它不需要我们额外启动一个 HTTP 服务，也不需要开放端口，客户端启动这个 Python 脚本以后，就可以通过标准输入输出和它完成 MCP 通信。】
 
 转场：Server 做好之后，还需要注册到 AI 应用里，AI 应用才能发现和调用它。
 
