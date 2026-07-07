@@ -360,11 +360,20 @@
       align-content: center;
       justify-items: center;
       text-align: center;
+      gap: 28px;
     }
     .thanks-frame h1 {
-      font-size: 132px;
+      font-size: 58px;
       line-height: 1;
       font-weight: 800;
+    }
+    .thanks-qr {
+      width: 330px;
+      height: 330px;
+      object-fit: contain;
+      display: block;
+      background: var(--paper);
+      box-shadow: var(--card-shadow);
     }
     .stack-frame { grid-template-rows: auto 1fr; }
     .split-frame { grid-template-columns: .9fr 1.1fr; align-items: stretch; gap: 48px; }
@@ -1301,7 +1310,7 @@
       risk: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p><div class="ribbon reveal" style="margin-top:30px;">${s.risks.map((risk) => `<span class="tag">${esc(risk)}</span>`).join("")}</div></div><div class="sheet reveal"><h3>控制建议</h3><div style="margin-top:24px;">${list(s.controls)}</div></div></div>`,
       roadmap: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="timeline reveal">${s.items.map(([phase, title, body]) => `<div class="phase"><strong>${esc(phase)} · ${esc(title)}</strong><span>${esc(body)}</span></div>`).join("")}</div></div>`,
       summary: (s) => `<div class="frame stack-frame"><header><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></header><div class="summary-map reveal"><div class="summary-node summary-protocol"><strong data-editable>${esc(s.items[0][0])}</strong><span data-editable>${esc(s.items[0][1])}</span></div><div class="summary-node summary-server"><strong data-editable>${esc(s.items[1][0])}</strong><span data-editable>${esc(s.items[1][1])}</span><div class="summary-capability-title">MCP Server 暴露的能力类型</div><div class="summary-capabilities"><div class="summary-capability tools"><strong data-editable>${esc(s.items[2][0])}</strong><span data-editable>${esc(s.items[2][1])}</span></div><div class="summary-capability resources"><strong data-editable>${esc(s.items[3][0])}</strong><span data-editable>${esc(s.items[3][1])}</span></div><div class="summary-capability prompts"><strong data-editable>${esc(s.items[4][0])}</strong><span data-editable>${esc(s.items[4][1])}</span></div></div></div><div class="summary-node summary-gateway"><strong data-editable>${esc(s.items[5][0])}</strong><span data-editable>${esc(s.items[5][1])}</span></div><div class="quote" data-editable>${esc(s.quote)}</div></div></div>`,
-      thanks: (s) => `<div class="frame thanks-frame">${edit(s.title, "h1", "reveal")}</div>`,
+      thanks: (s) => `<div class="frame thanks-frame"><img class="thanks-qr reveal" src="二维码.png" alt="二维码">${edit(s.title, "h1", "reveal")}</div>`,
       qa: (s) => `<div class="frame split-frame"><div><div class="label reveal">${esc(s.label)}</div>${edit(s.title, "h2", "reveal")}<p class="lead reveal" data-editable>${esc(s.lead)}</p></div><div class="two">${s.items.map(tile).join("")}</div></div>`
     };
 
