@@ -72,6 +72,125 @@
         background: var(--stage-bg, #000);
     }
 
+    body.cursor-ready,
+    body.cursor-ready * {
+        cursor: none !important;
+    }
+
+    .presentation-cursor {
+        --cursor-x: -100px;
+        --cursor-y: -100px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 46px;
+        height: 46px;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0;
+        transform: translate3d(var(--cursor-x), var(--cursor-y), 0) translate(6px, 6px) scale(.72);
+        transition:
+            opacity .18s var(--ease-out-expo),
+            transform .12s var(--ease-out-expo),
+            filter .18s ease;
+        filter:
+            drop-shadow(0 0 1px rgba(252, 255, 247, .98))
+            drop-shadow(0 0 3px rgba(252, 255, 247, .72))
+            drop-shadow(0 10px 18px rgba(0, 0, 0, .34))
+            drop-shadow(0 0 16px rgba(40, 166, 183, .36));
+        mix-blend-mode: normal;
+    }
+
+    .presentation-cursor::before,
+    .presentation-cursor::after {
+        content: "";
+        position: absolute;
+    }
+
+    .presentation-cursor::before {
+        left: 0;
+        top: 0;
+        width: 27px;
+        height: 34px;
+        background:
+            linear-gradient(135deg, rgba(255,255,255,.45), rgba(255,255,255,0) 34%),
+            linear-gradient(145deg, var(--cyan), var(--blue));
+        clip-path: polygon(0 0, 0 78%, 21% 58%, 38% 96%, 58% 86%, 41% 51%, 72% 51%);
+        box-shadow:
+            inset 0 0 0 2px rgba(252, 255, 247, .88),
+            0 0 0 1px rgba(13, 17, 23, .32),
+            0 0 0 4px rgba(40, 166, 183, .18),
+            0 0 18px rgba(40, 166, 183, .42);
+    }
+
+    .presentation-cursor::after {
+        left: -5px;
+        top: -5px;
+        width: 10px;
+        height: 10px;
+        border: 2px solid var(--red);
+        border-radius: 50%;
+        background: rgba(198, 84, 61, .14);
+        box-shadow: 0 0 0 4px rgba(198, 84, 61, .12);
+        opacity: 0;
+        transform: scale(.72);
+    }
+
+    body.cursor-visible .presentation-cursor {
+        opacity: 1;
+        transform: translate3d(var(--cursor-x), var(--cursor-y), 0) translate(6px, 6px) scale(1);
+    }
+
+    body.cursor-down .presentation-cursor {
+        filter:
+            drop-shadow(0 0 1px rgba(252, 255, 247, .98))
+            drop-shadow(0 0 3px rgba(252, 255, 247, .72))
+            drop-shadow(0 10px 15px rgba(0, 0, 0, .34))
+            drop-shadow(0 0 18px rgba(198, 84, 61, .42));
+        transform: translate3d(var(--cursor-x), var(--cursor-y), 0) translate(6px, 6px) scale(.9);
+    }
+
+    body.cursor-down .presentation-cursor::before {
+        background:
+            linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,0) 34%),
+            linear-gradient(145deg, var(--red), var(--gold));
+        box-shadow:
+            inset 0 0 0 2px rgba(252, 255, 247, .88),
+            0 0 0 1px rgba(13, 17, 23, .32),
+            0 0 0 5px rgba(198, 84, 61, .18),
+            0 0 20px rgba(198, 84, 61, .42);
+    }
+
+    body.cursor-click .presentation-cursor::after {
+        animation: cursorClickPulse .42s ease-out;
+    }
+
+    @keyframes cursorClickPulse {
+        0% {
+            opacity: .95;
+            transform: scale(.72);
+        }
+        58% {
+            opacity: .58;
+            transform: scale(1.75);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(1);
+        }
+    }
+
+    @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+        body.cursor-ready,
+        body.cursor-ready * {
+            cursor: auto !important;
+        }
+
+        .presentation-cursor {
+            display: none;
+        }
+    }
+
     /* 3. Fixed 16:9 design canvas.
        JavaScript sets transform: translate(...) scale(...). */
     .deck-stage {
@@ -1329,6 +1448,7 @@
         this.setupNavigation();
         this.setupTouch();
         this.setupWheel();
+        this.setupPresentationCursor();
         const requested = Number.parseInt(new URLSearchParams(location.search).get("slide") || "", 10);
         const stored = Number.parseInt(localStorage.getItem(this.indexKey) || "0", 10);
         this.show(Number.isFinite(requested) ? requested - 1 : stored);
@@ -1387,6 +1507,40 @@
           this.go(event.deltaY > 0 ? 1 : -1);
           setTimeout(() => locked = false, 440);
         }, { passive: true });
+      }
+
+      setupPresentationCursor() {
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+        if (reducedMotion || coarsePointer) return;
+
+        const cursor = document.createElement("div");
+        cursor.className = "presentation-cursor";
+        cursor.setAttribute("aria-hidden", "true");
+        document.body.appendChild(cursor);
+        document.body.classList.add("cursor-ready");
+
+        const move = (event) => {
+          cursor.style.setProperty("--cursor-x", `${event.clientX}px`);
+          cursor.style.setProperty("--cursor-y", `${event.clientY}px`);
+          document.body.classList.add("cursor-visible");
+        };
+        let clickTimer = 0;
+        const hide = () => {
+          document.body.classList.remove("cursor-visible", "cursor-down", "cursor-click");
+        };
+
+        window.addEventListener("mousemove", move, { passive: true });
+        window.addEventListener("mousedown", () => {
+          window.clearTimeout(clickTimer);
+          document.body.classList.remove("cursor-click");
+          cursor.offsetWidth;
+          document.body.classList.add("cursor-down", "cursor-click");
+          clickTimer = window.setTimeout(() => document.body.classList.remove("cursor-click"), 440);
+        });
+        window.addEventListener("mouseup", () => document.body.classList.remove("cursor-down"));
+        document.addEventListener("mouseleave", hide);
+        window.addEventListener("blur", hide);
       }
 
       restoreEdits() {
